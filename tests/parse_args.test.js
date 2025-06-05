@@ -3,8 +3,8 @@ const klsh = require('../dist/klsh.js');
 
 describe('parse_args', function() {
   it('main is not implemented', function() {
-    const result = klsh.parse_args.main({ args: [], stdin: "", env: {} });
-    expect(result).to.deep.equal({stdout: "", stderr: "Not implemented\n", env: {'?': 1}});
+    const result = klsh.parse_args.main({ args: [], stdin: '', env: {} });
+    expect(result).to.deep.equal({stdout: '', stderr: 'Not implemented\n', env: {'?': 1}});
   });
   it('parse non option args', function() {
     const result = klsh.parse_args.parse(['hello', 'world'], []);
@@ -13,11 +13,11 @@ describe('parse_args', function() {
   it('parse flags', function() {
     const option_spec = [
         {
-            key: "print_version",
-            short_tag: "V",
-            long_tag: "version",
-            spec: "flag",
-            help: "output version information and exit"
+            key: 'print_version',
+            short_tag: 'V',
+            long_tag: 'version',
+            spec: 'flag',
+            help: 'output version information and exit'
         }
     ];
     let result;
@@ -33,9 +33,9 @@ describe('parse_args', function() {
 
   it('parse bundled flags', function() {
     const option_spec = [
-        { key: "a_flag", short_tag: "a", long_tag: "alpha", spec: "flag", help: "" },
-        { key: "b_flag", short_tag: "b", long_tag: "beta", spec: "flag", help: "" },
-        { key: "c_flag", short_tag: "c", long_tag: "gamma", spec: "flag", help: "" }
+        { key: 'a_flag', short_tag: 'a', long_tag: 'alpha', spec: 'flag', help: '' },
+        { key: 'b_flag', short_tag: 'b', long_tag: 'beta', spec: 'flag', help: '' },
+        { key: 'c_flag', short_tag: 'c', long_tag: 'gamma', spec: 'flag', help: '' }
     ];
     const result = klsh.parse_args.parse(['-abc', 'world'], option_spec);
     expect(result).to.deep.equal({options: {a_flag: true, b_flag: true, c_flag: true}, operands: ['world'], unknown: []});
@@ -43,11 +43,11 @@ describe('parse_args', function() {
   it('parse string options', function() {
     const option_spec = [
         {
-            key: "name_s",
-            short_tag: "n",
-            long_tag: "name",
-            spec: "string",
-            help: "A name"
+            key: 'name_s',
+            short_tag: 'n',
+            long_tag: 'name',
+            spec: 'string',
+            help: 'A name'
         }
     ];
     let result;
