@@ -27,7 +27,7 @@ function _interpretEscapes(s) {
             oct += s[j++];
           }
           if (oct) {
-            out += String.fromCharCode(parseInt(oct, 8));
+            out += String.fromCharCode(Number.parseInt(oct, 8));
             i = j - 1;
           } else {
             out += '\0';
@@ -41,7 +41,7 @@ function _interpretEscapes(s) {
             hex += s[j++];
           }
           if (hex) {
-            out += String.fromCharCode(parseInt(hex, 16));
+            out += String.fromCharCode(Number.parseInt(hex, 16));
             i = j - 1;
           } else {
             out += 'x';
