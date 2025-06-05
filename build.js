@@ -29,7 +29,7 @@ output += `
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = components;
   } else {
-    global.klsh = components;
+    global.klsn = components;
   }
 })(typeof window !== 'undefined' ? window : this);
 `;
