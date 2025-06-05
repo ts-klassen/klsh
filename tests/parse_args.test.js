@@ -1,13 +1,14 @@
 const { expect } = require('chai');
 const klsh = require('../dist/klsh.js');
+const { parse } = require('../src/core/parse_args');
 
 describe('parse_args', function() {
   it('main is not implemented', function() {
-    const result = klsh.echo.main({ args: [], stdin: "", env: {} });
+    const result = klsh.parse_args.main({ args: [], stdin: "", env: {} });
     expect(result).to.deep.equal({stdout: "", stderr: "Not implemented\n", env: {'?': 1}});
   });
   it('parse non option args', function() {
-    const result = klsh.parse_args.parse(['hello', 'world'], []);
+    const result = parse(['hello', 'world'], []);
     expect(result).to.deep.equal({options: {}, operands: ['hello', 'world'], unknown: []});
   });
   it('parse flags', function() {
@@ -21,13 +22,13 @@ describe('parse_args', function() {
         }
     ];
     var result;
-    result = klsh.parse_args.parse(['hello', '-V', 'world'], option_spec);
+    result = parse(['hello', '-V', 'world'], option_spec);
     expect(result).to.deep.equal({options: {print_version: true}, operands: ['hello', 'world'], unknown: []});
-    result = klsh.parse_args.parse(['hello', '--version', 'world'], option_spec);
+    result = parse(['hello', '--version', 'world'], option_spec);
     expect(result).to.deep.equal({options: {print_version: true}, operands: ['hello', 'world'], unknown: []});
-    result = klsh.parse_args.parse(['hello', '-v', 'world'], option_spec);
+    result = parse(['hello', '-v', 'world'], option_spec);
     expect(result).to.deep.equal({options: {}, operands: ['hello', 'world'], unknown: ['-v']});
-    result = klsh.parse_args.parse(['hello', '--', 'world', '-v', '--version'], option_spec);
+    result = parse(['hello', '--', 'world', '-v', '--version'], option_spec);
     expect(result).to.deep.equal({options: {}, operands: ['hello', 'world', '-v', '--version'], unknown: []});
   });
 
@@ -37,7 +38,7 @@ describe('parse_args', function() {
         { key: "b_flag", short_tag: "b", long_tag: "beta", spec: "flag", help: "" },
         { key: "c_flag", short_tag: "c", long_tag: "gamma", spec: "flag", help: "" }
     ];
-    const result = klsh.parse_args.parse(['-abc', 'world'], option_spec);
+    const result = parse(['-abc', 'world'], option_spec);
     expect(result).to.deep.equal({options: {a_flag: true, b_flag: true, c_flag: true}, operands: ['world'], unknown: []});
   });
   it('parse string options', function() {
@@ -51,16 +52,16 @@ describe('parse_args', function() {
         }
     ];
     var result;
-    result = klsh.parse_args.parse(['hello', '-n', 'test', 'world'], option_spec);
+    result = parse(['hello', '-n', 'test', 'world'], option_spec);
     expect(result).to.deep.equal({options: {name_s: 'test'}, operands: ['hello', 'world'], unknown: []});
-    result = klsh.parse_args.parse(['hello', '--name', 'test', 'world'], option_spec);
+    result = parse(['hello', '--name', 'test', 'world'], option_spec);
     expect(result).to.deep.equal({options: {name_s: 'test'}, operands: ['hello', 'world'], unknown: []});
-    result = klsh.parse_args.parse(['hello', '--Name', 'test', 'world'], option_spec);
+    result = parse(['hello', '--Name', 'test', 'world'], option_spec);
     expect(result).to.deep.equal({options: {}, operands: ['hello', 'test', 'world'], unknown: ['--Name']});
-    result = klsh.parse_args.parse(['hello', '--', 'world', '--name', '-n', 'test'], option_spec);
+    result = parse(['hello', '--', 'world', '--name', '-n', 'test'], option_spec);
     expect(result).to.deep.equal({options: {}, operands: ['hello', 'world', '--name', '-n', 'test'], unknown: []});
     // support --name=test syntax
-    result = klsh.parse_args.parse(['hello', '--name=test', 'world'], option_spec);
+    result = parse(['hello', '--name=test', 'world'], option_spec);
     expect(result).to.deep.equal({options: {name_s: 'test'}, operands: ['hello', 'world'], unknown: []});
   });
 });
