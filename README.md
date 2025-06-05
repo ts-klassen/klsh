@@ -17,3 +17,18 @@ Tests are written with Mocha & Chai. Run:
 ```bash
 npm test
 ```
+## Building for Browser
+
+To bundle all components into a single JavaScript file for browser use, run:
+```bash
+npm run build
+```
+This generates `dist/klsh.js`. Include it in your HTML:
+```html
+<script src="dist/klsh.js"></script>
+<script>
+  // `klsh.echo` is now available globally
+  const result = klsh.echo({ args: ['hello'], stdin: '', env: {} });
+  console.log(result.stdout);
+</script>
+```
