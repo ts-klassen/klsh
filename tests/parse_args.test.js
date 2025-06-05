@@ -20,7 +20,7 @@ describe('parse_args', function() {
             help: "output version information and exit"
         }
     ];
-    var result;
+    let result;
     result = klsh.parse_args.parse(['hello', '-V', 'world'], option_spec);
     expect(result).to.deep.equal({options: {print_version: true}, operands: ['hello', 'world'], unknown: []});
     result = klsh.parse_args.parse(['hello', '--version', 'world'], option_spec);
@@ -50,7 +50,7 @@ describe('parse_args', function() {
             help: "A name"
         }
     ];
-    var result;
+    let result;
     result = klsh.parse_args.parse(['hello', '-n', 'test', 'world'], option_spec);
     expect(result).to.deep.equal({options: {name_s: 'test'}, operands: ['hello', 'world'], unknown: []});
     result = klsh.parse_args.parse(['hello', '--name', 'test', 'world'], option_spec);
