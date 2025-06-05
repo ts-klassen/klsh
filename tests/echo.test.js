@@ -6,4 +6,8 @@ describe('echo', function() {
     const result = klsh.echo.main({ args: ['hello', 'world'], stdin: "", env: {} });
     expect(result).to.deep.equal({stdout: "hello world\n", stderr: "", env: {'?': 0}});
   });
+  it('no new line', function() {
+    const result = klsh.echo.main({ args: ['-n', 'hello', 'world'], stdin: "", env: {} });
+    expect(result).to.deep.equal({stdout: "hello world", stderr: "", env: {'?': 0}});
+  });
 });

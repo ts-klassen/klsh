@@ -7,6 +7,22 @@ if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
 const files = fs.readdirSync(coreDir).filter(f => f.endsWith('.js'));
 
+// Read each core module, detect its exports and count requires to order bundling
+const modules = files.map(file => {
+  const filePath = path.join(coreDir, file);
+  const rawContent = fs.readFileSync(filePath, 'utf8');
+  const exportMatch = rawContent.match(/module\.exports\s*=\s*\{([^}]*)\}/);
+  const exportKeys = exportMatch
+    ? exportMatch[1].split(',').map(s => s.trim())
+    : [];
+  const requireMatches = rawContent.match(/require\(\s*['"]\.\/\w+['"]\s*\)/g) || [];
+  const requireCount = requireMatches.length;
+  return { file, rawContent, exportKeys, requireCount };
+});
+
+// Sort modules so dependencies (with fewer requires) come first
+modules.sort((a, b) => a.requireCount - b.requireCount);
+
 // Generate src/index.js from src/core components
 const indexPath = path.join(__dirname, 'src', 'index.js');
 const componentNames = files.map(f => path.basename(f, '.js'));
@@ -30,16 +46,20 @@ let output = `(function(global) {
   var components = {};
 `;
 
-files.forEach(file => {
+modules.forEach(({ file, rawContent, exportKeys }) => {
   const name = path.basename(file, '.js');
-  let content = fs.readFileSync(path.join(coreDir, file), 'utf8');
-  content = content.replace(/module\.exports\s*=\s*\{[^}]*\};?/g, '');
+  // Remove module.exports assignment
+  let content = rawContent.replace(/module\.exports\s*=\s*\{[^}]*\};?/, '');
+  // Rename main to module name
   content = content.replace(/function\s+main/, `function ${name}`);
+  // Replace requires to other core modules with component references
+  content = content.replace(/require\(\s*['"]\.\/([\w-]+)['"]\s*\)/g, "components['$1']");
+  // Wrap module code and assign exports
   output += `
   // component: ${name}
   (function() {
 ${content.split('\n').map(line => '    ' + line).join('\n')}
-    components['${name}'] = { main: ${name} };
+    components['${name}'] = { ${exportKeys.map(key => `${key}: ${key === 'main' ? name : key}`).join(', ')} };
   })();
 `;
 });
