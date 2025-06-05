@@ -27,8 +27,8 @@ This generates `dist/klsh.js`. Include it in your HTML:
 ```html
 <script src="dist/klsh.js"></script>
 <script>
-  // `klsn.echo` is now available globally
-  const result = klsn.echo({ args: ['hello'], stdin: '', env: {} });
+  // `klsh.echo.main` is now available globally
+  const result = klsh.echo.main({ args: ['hello'], stdin: '', env: {} });
   console.log(result.stdout);
 </script>
 ```

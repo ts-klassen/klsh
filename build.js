@@ -20,7 +20,7 @@ files.forEach(file => {
   // component: ${name}
   (function() {
 ${content.split('\n').map(line => '    ' + line).join('\n')}
-    components['${name}'] = ${name};
+    components['${name}'] = { main: ${name} };
   })();
 `;
 });
@@ -29,7 +29,7 @@ output += `
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = components;
   } else {
-    global.klsn = components;
+    global.klsh = components;
   }
 })(typeof window !== 'undefined' ? window : this);
 `;

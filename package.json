@@ -4,7 +4,7 @@
   "description": "Minimal text-based pipeline framework for browser environment",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha --recursive tests",
+    "test": "npm run build && mocha --recursive tests",
     "build": "node build.js"
   },
   "keywords": [
