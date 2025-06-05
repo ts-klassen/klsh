@@ -1,0 +1,20 @@
+{
+  "name": "klsh",
+  "version": "0.1.0",
+  "description": "Minimal text-based pipeline framework for browser environment",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha --recursive tests"
+  },
+  "keywords": [
+    "shell",
+    "pipeline",
+    "text"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "chai": "^4.3.7"
+  }
+}
