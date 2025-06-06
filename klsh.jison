@@ -1,8 +1,9 @@
 %lex
 %%
-\s+        /* skip whitespace */
-<<EOF>>    return 'EOF';
-[^\s]+    return 'WORD';
+\s+                 /* skip whitespace */
+<<EOF>>             return 'EOF';
+\'[^']*\'        { yytext = yytext.slice(1, -1); return 'WORD'; }
+[^\s]+            return 'WORD';
 /lex
 
 %start input
