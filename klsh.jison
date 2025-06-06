@@ -1,25 +1,24 @@
 %lex
 %%
-\s+                 /* skip whitespace */
 <<EOF>>             return 'EOF';
-\'[^']*\'        { yytext = yytext.slice(1, -1); return 'WORD'; }
-[^\s]+            return 'WORD';
+([^\'\"\s]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+            return 'LITERAL';
+\s+                 /* skip whitespace */
 /lex
 
 %start input
-%token WORD EOF
+%token LITERAL EOF
 
 %%
 
 input
-    : WORD params EOF
+    : LITERAL params EOF
         { return { component: $1, params: $2 }; }
     ;
 
 params
     : /* empty */
         { $$ = []; }
-    | params WORD
+    | params LITERAL
         { $1.push($2); $$ = $1; }
     ;
 
