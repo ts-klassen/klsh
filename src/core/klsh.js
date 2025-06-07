@@ -65,9 +65,28 @@ function literal_to_string(parts, env) {
 }
 
 // Shell entrypoint: execute parsed commands from stdin
-function main({ args = [], stdin = '', env = {} }) {
-  const commands = klsh.parser.klsh(stdin);
-  return run_commands(commands, env);
+function main({ args = [], stdin = '', env: parentEnv = {} }) {
+  let stdout = '';
+  let stderr = '';
+  // Clone initial environment
+  let env = clone(parentEnv);
+  try {
+    const commands = klsh.parser.klsh(stdin);
+    return run_commands(commands, env);
+  } catch (err) {
+    // Syntax error: report and set exit status 2
+    stderr += (err.message || 'Parse error') + '\n';
+    // Append detailed parseError info if available
+    if (err.hash) {
+      const h = err.hash;
+      if (h.line     !== undefined) stderr += `Line: ${h.line}\n`;
+      if (h.token    ) stderr += `Token: ${h.token}\n`;
+      if (h.text     ) stderr += `Text: ${h.text}\n`;
+      if (h.expected ) stderr += `Expected: ${h.expected}\n`;
+    }
+    env['?'] = 2;
+    return { stdout, stderr, env };
+  }
 }
 
 module.exports = { main };
