@@ -54,12 +54,6 @@ let output = `(function(global) {
   var klsh = {};
   klsh['parser'] = {};
 `;
-// Inline parser helpers and hooks from src/parser/main.js
-const helperFile = path.join(parserDir, 'main.js');
-if (fs.existsSync(helperFile)) {
-  const helperSrc = fs.readFileSync(helperFile, 'utf8');
-  output += helperSrc.split('\n').map(line => '  ' + line).join('\n') + '\n';
-}
 // For each grammar, generate a standalone parser and attach to components.parser
 parserFiles.forEach(file => {
   const name = path.basename(file, '.jison');
@@ -72,8 +66,8 @@ parserFiles.forEach(file => {
   // indent and declare parser
   output += `  // parser: ${name}\n`;
   output += code.split('\n').map(line => '  ' + line).join('\n') + '\n';
-  // wrap parser with helper wrapper
-  output += `  klsh['parser']['${name}'] = function(input) { return wrapParse(parser.parse.bind(parser), input); };\n`;
+  // register parser for grammar: ${name}
+  output += `  klsh['parser']['${name}'] = parser.parse.bind(parser);\n`;
 });
 
 modules.forEach(({ file, rawContent, exportKeys }) => {
