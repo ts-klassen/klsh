@@ -101,4 +101,64 @@ describe('parser', function() {
         ]
     }]);
   });
+
+  it('ignores trailing separators (semicolon)', function() {
+    const result = klsh.parser.klsh('echo a;');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }]);
+  });
+
+  it('ignores empty commands between separators', function() {
+    const result = klsh.parser.klsh('echo a;;echo b');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+
+  it('ignores commands with only whitespace', function() {
+    const result = klsh.parser.klsh('echo a;   ; echo b');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+
+  it('parses mixed separators (semicolon and newline)', function() {
+    const result = klsh.parser.klsh(`echo a; echo b\necho c`);
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'c'}]
+        ]
+    }]);
+  });
 });
