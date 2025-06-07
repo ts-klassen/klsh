@@ -1,48 +1,55 @@
-BUILD.md
-========
+# BUILD.md
 
-Overview
---------
-`build.js` is the project’s bundler for generating:
-- `dist/klsh.js` (a single UMD bundle for browser or Node)
+## Overview
 
-Key Steps
----------
-1. Bundle `dist/klsh.js`
-   - Starts a UMD IIFE: `var klsh = {};`
-   - **Parser embedding:**
-     - Scans `src/parser` for any `.jison` grammars
-     - Reads helper file `src/parser/main.js` (if present), strips off its `module.exports` line, and inlines its function declarations
-     - Automatically wires up each helper export under `klsh.parser.<fnName>`
-     - For each grammar file:
-       - Uses JISON at build time to generate a standalone parser
-       - Strips out the UMD/CommonJS wrapper from that code
-       - Inlines the raw parser code into the IIFE
-       - Attaches an object to `klsh.parser.<grammarName>` exposing:
-         - `main`: the stubbed `main` from helper file (Not implemented)
-         - `parse`: the real parser function bound to its parser instance
-   - **Core components embedding:**
-     - Iterates over `src/core/*.js` again
-     - Moves each `main` function into `klsh.<componentName>.main` and any other exports alongside
+`build.js` is the project bundler that produces `dist/klsh.js`, a single UMD bundle for browser and Node.js.
 
-2. Output
-   - Writes `dist/klsh.js` containing:
-     ```js
-     (function(global) {
-       var klsh = {};
-       // parser helpers & inlined parsers
-       // core components
-       module.exports = klsh;
-     })(this);
-     ```
+## Key Steps
 
-Additions
----------
-- If additional `.jison` grammars are dropped into `src/parser`, they will be auto-discovered and embedded
-- If helpers are added to `src/parser/main.js`'s `module.exports`, they will appear as `klsh.parser.<helperName>`
+1. **Bundle `dist/klsh.js`**
 
-Pre-commit
-----------
-- Run `node build.js` and verify `npm test` passes
+   - **UMD wrapper**
+     Starts a UMD IIFE that initializes `var klsh = {};`.
 
-Maintainers: update this doc whenever `build.js` logic changes.
+   - **Parser embedding**
+     1. Scan `src/parser` for any `.jison` files.
+     2. Read helper file `src/parser/main.js` (if present), strip off its `module.exports` line, and inline its function declarations.
+     3. Wire up each helper export under `klsh.parser.<fnName>`.
+     4. For each grammar file:
+        - Generate a standalone parser via Jison at build time.
+        - Strip the UMD/CommonJS wrapper from the generated code.
+        - Inline the raw parser code into the IIFE.
+        - Attach:
+          - `main`: stubbed main from helper file (Not implemented).
+          - `parse`: real parser function bound to its parser instance.
+
+   - **Core components embedding**
+     1. Scan `src/core/*.js` for modules.
+     2. For each module:
+        - Parse `module.exports = {...}` to find exported keys.
+        - Remove the `module.exports` line.
+        - Rename `main` function to the module name.
+        - Inline the code and attach each export under `klsh.<componentName>`.
+
+## Output
+
+Writes `dist/klsh.js` containing:
+```js
+(function(global) {
+  var klsh = {};
+  // parser helpers & inlined parsers
+  // core components
+  module.exports = klsh;
+})(this);
+```
+
+## Additions
+
+- Dropping new `.jison` files into `src/parser` auto-discovers and embeds them.
+- Exported functions in `src/parser/main.js` appear as `klsh.parser.<helperName>`.
+
+## Pre-commit
+
+- Run `node build.js` and verify `npm test` passes.
+
+Maintain this document whenever `build.js` logic changes.
