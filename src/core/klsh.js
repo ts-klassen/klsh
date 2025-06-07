@@ -33,7 +33,7 @@ function run_commands(commands, parentEnv) {
         // Report only the error message; optionally include full error if verbose flag is present
         stderr += (err.message || 'Error') + '\n';
         if ('KLSH_VERBOSE_ERROR' in env) {
-          stderr += String(err) + '\n';
+          stderr += '\n\nKLSH_VERBOSE_ERROR\n' + err.stack + '\n';
         }
         env['?'] = 255;
         env = clone(env);
@@ -96,7 +96,7 @@ function main({ args = [], stdin = '', env: parentEnv = {} }) {
     }
     // Include verbose error if requested
     if ('KLSH_VERBOSE_ERROR' in env) {
-      stderr += String(err) + '\n';
+      stderr += '\n\nKLSH_VERBOSE_ERROR\n' + err.stack + '\n';
     }
     env['?'] = 2;
     return { stdout, stderr, env };

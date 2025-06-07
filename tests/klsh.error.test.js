@@ -16,6 +16,7 @@ describe('klsh error handling', function() {
     const result = klsh.klsh.main({ args: [], stdin: input, env: { KLSH_VERBOSE_ERROR: true } });
     // Should report a parse/lexical error followed by the full Error string
     expect(result.stderr).to.match(/error[\s\S]*Error:/i);
+    expect(result.stderr).to.match(/\nKLSH_VERBOSE_ERROR\n/);
     expect(result.env['?']).to.equal(2);
   });
 
@@ -33,6 +34,7 @@ describe('klsh error handling', function() {
     k.fail = { main: () => { throw new Error('FAILERR'); } };
     const result = k.klsh.main({ args: [], stdin: 'fail', env: { KLSH_VERBOSE_ERROR: true } });
     expect(result.stderr).to.match(/FAILERR[\s\S]*Error:/);
+    expect(result.stderr).to.match(/\nKLSH_VERBOSE_ERROR\n/);
     expect(result.env['?']).to.equal(255);
   });
 });
