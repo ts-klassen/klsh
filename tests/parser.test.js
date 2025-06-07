@@ -73,4 +73,32 @@ describe('parser', function() {
         ]
     }]);
   });
+  it('parse multiple commands separated by semicolons', function() {
+    const result = klsh.parser.klsh('echo a; echo b');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    },{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+  it('parse multiple commands separated by newline', function() {
+    const result = klsh.parser.klsh(`echo a\necho b`);
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    },{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
 });
