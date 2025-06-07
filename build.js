@@ -49,9 +49,10 @@ const parserDir = path.join(__dirname, 'src', 'parser');
 const parserFiles = fs.existsSync(parserDir)
   ? fs.readdirSync(parserDir).filter(f => f.endsWith('.jison'))
   : [];
+// Start bundle and root object 'klsh'
 let output = `(function(global) {
-  var components = {};
-  components['parser'] = {};
+  var klsh = {};
+  klsh['parser'] = {};
 `;
 // For each grammar, generate a standalone parser and attach to components.parser
 parserFiles.forEach(file => {
@@ -65,7 +66,7 @@ parserFiles.forEach(file => {
   // indent and declare parser
   output += `  // parser: ${name}\n`;
   output += code.split('\n').map(line => '  ' + line).join('\n') + '\n';
-  output += `  components['parser']['${name}'] = parser.parse.bind(parser);\n`;
+  output += `  klsh['parser']['${name}'] = parser.parse.bind(parser);\n`;
 });
 
 modules.forEach(({ file, rawContent, exportKeys }) => {
@@ -75,22 +76,22 @@ modules.forEach(({ file, rawContent, exportKeys }) => {
   // Rename main to module name
   content = content.replace(/function\s+main/, `function ${name}`);
   // Replace requires to other core modules with component references
-  content = content.replace(/require\(\s*['"]\.\/([\w-]+)['"]\s*\)/g, "components['$1']");
+  content = content.replace(/require\(\s*['"]\.\/([\w-]+)['"]\s*\)/g, "klsh['$1']");
   // Wrap module code and assign exports
   output += `
   // component: ${name}
   (function() {
 ${content.split('\n').map(line => '    ' + line).join('\n')}
-    components['${name}'] = { ${exportKeys.map(key => `${key}: ${key === 'main' ? name : key}`).join(', ')} };
+    klsh['${name}'] = { ${exportKeys.map(key => `${key}: ${key === 'main' ? name : key}`).join(', ')} };
   })();
 `;
 });
 
 output += `
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = components;
+    module.exports = klsh;
   } else {
-    global.klsh = components;
+    global.klsh = klsh;
   }
 })(typeof window !== 'undefined' ? window : this);
 `;

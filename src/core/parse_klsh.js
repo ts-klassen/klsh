@@ -8,7 +8,7 @@ function main({ args = [], stdin = '', env = {} }) {
 
 function parse(cmdLine) {
   // Use the Jison-generated parser for 'klsh'
-  return components['parser']['klsh'](cmdLine);
+  return klsh.parser.klsh(cmdLine);
 }
 
 module.exports = { main, parse };
