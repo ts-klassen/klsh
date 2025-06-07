@@ -52,7 +52,7 @@ For strings with expansions or substitutions, represent each segment accordingly
   },
   {
     "type": "substitution",
-    "value": [{"component": [[{"type": "text", "value", "pwd"}]], "params": []}]
+    "value": [{"component": [[{"type": "text", "value": "pwd"}]], "params": []}]
   }
 ]
 ```
