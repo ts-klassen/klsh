@@ -94,6 +94,10 @@ function main({ args = [], stdin = '', env: parentEnv = {} }) {
       if (h.text     ) stderr += `Text: ${h.text}\n`;
       if (h.expected ) stderr += `Expected: ${h.expected}\n`;
     }
+    // Include verbose error if requested
+    if ('KLSH_VERBOSE_ERROR' in env) {
+      stderr += String(err) + '\n';
+    }
     env['?'] = 2;
     return { stdout, stderr, env };
   }
