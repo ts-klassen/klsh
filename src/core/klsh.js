@@ -30,8 +30,11 @@ function run_commands(commands, parentEnv) {
         stderr += res.stderr;
         env = clone(res.env);
       } catch (err) {
+        // Report only the error message; optionally include full error if verbose flag is present
         stderr += (err.message || 'Error') + '\n';
-        if (err.stack) stderr += err.stack + '\n';
+        if ('KLSH_VERBOSE_ERROR' in env) {
+          stderr += String(err) + '\n';
+        }
         env['?'] = 255;
         env = clone(env);
       }
