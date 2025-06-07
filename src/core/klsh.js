@@ -1,6 +1,22 @@
-// Convert a parsed literal (array of parts) into a single string
-function literal_to_string(parts) {
-  return parts.map(p => p.value).join('');
+// Convert a parsed literal (array of parts) into a single string, handling expansions
+function literal_to_string(parts, env) {
+  let str = '';
+  for (const part of parts) {
+    switch (part.type) {
+      case 'text':
+        str += part.value;
+        break;
+      case 'expansion':
+        str += env[part.value] !== undefined ? env[part.value] : '';
+        break;
+      case 'substitution':
+        // command substitution not implemented yet
+        break;
+      default:
+        break;
+    }
+  }
+  return str;
 }
 
 function main({ args = [], stdin = '', env = {} }) {
@@ -13,8 +29,8 @@ function main({ args = [], stdin = '', env = {} }) {
 
   for (const cmd of commands) {
     // Reconstruct command name and its arguments
-    const cmdName = literal_to_string(cmd.component);
-    const cmdArgs = cmd.params.map(literal_to_string);
+    const cmdName = literal_to_string(cmd.component, currentEnv);
+    const cmdArgs = cmd.params.map(p => literal_to_string(p, currentEnv));
 
     // Dispatch to built-in if available
     const builtin = klsh[cmdName];
