@@ -8,17 +8,17 @@ describe('parser', function() {
   });
   it('parse no-options simple', function() {
     const result = klsh.parser.klsh('echo hello world');
-    expect(result).to.deep.equal({
+    expect(result).to.deep.equal([{
         "component": [{"type": "text", "value": "echo"}],
         "params": [
             [{"type": "text", "value": 'hello'}],
             [{"type": "text", "value": 'world'}]
         ]
-    });
+    }]);
   });
   it('parse with options', function() {
     const result = klsh.parser.klsh('echo -ne hello world --opt test -- -v');
-    expect(result).to.deep.equal({
+    expect(result).to.deep.equal([{
         "component": [{"type": "text", "value": "echo"}],
         "params": [
            [{"type": "text", "value": '-ne'}],
@@ -29,11 +29,11 @@ describe('parser', function() {
            [{"type": "text", "value": '--'}],
            [{"type": "text", "value": '-v'}]
         ]
-    });
+    }]);
   });
   it('parse with single quote', function() {
     const result = klsh.parser.klsh("echo 'hello world' 'a''b''c'");
-    expect(result).to.deep.equal({
+    expect(result).to.deep.equal([{
         "component": [{"type": "text", "value": "echo"}],
         "params": [
             [{"type": "text", "value": "hello world"}],
@@ -43,11 +43,11 @@ describe('parser', function() {
                 {"type": "text", "value": "c"}
             ]
         ]
-    });
+    }]);
   });
   it('parse with double quote', function() {
     const result = klsh.parser.klsh('echo "hello world" "a""b""c"');
-    expect(result).to.deep.equal({
+    expect(result).to.deep.equal([{
         "component": [{"type": "text", "value": "echo"}],
         "params": [
             [{"type": "text", "value": "hello world"}],
@@ -57,11 +57,11 @@ describe('parser', function() {
                 {"type": "text", "value": "c"}
             ]
         ]
-    });
+    }]);
   });
   it('parse with quote', function() {
     const result = klsh.parser.klsh(`echo 'It'"'"'s a nice day' "\\"test\\""`);
-    expect(result).to.deep.equal({
+    expect(result).to.deep.equal([{
         "component": [{"type": "text", "value": "echo"}],
         "params": [
             [
@@ -71,6 +71,94 @@ describe('parser', function() {
             ],
             [{"type": "text", "value": '"test"'}]
         ]
-    });
+    }]);
+  });
+  it('parse multiple commands separated by semicolons', function() {
+    const result = klsh.parser.klsh('echo a; echo b');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    },{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+  it('parse multiple commands separated by newline', function() {
+    const result = klsh.parser.klsh(`echo a\necho b`);
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    },{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+
+  it('ignores trailing separators (semicolon)', function() {
+    const result = klsh.parser.klsh('echo a;');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }]);
+  });
+
+  it('ignores empty commands between separators', function() {
+    const result = klsh.parser.klsh('echo a;;echo b');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+
+  it('ignores commands with only whitespace', function() {
+    const result = klsh.parser.klsh('echo a;   ; echo b');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }]);
+  });
+
+  it('parses mixed separators (semicolon and newline)', function() {
+    const result = klsh.parser.klsh(`echo a; echo b\necho c`);
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'b'}]
+        ]
+    }, {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'c'}]
+        ]
+    }]);
   });
 });

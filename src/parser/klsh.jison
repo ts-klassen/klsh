@@ -1,18 +1,30 @@
 %lex
 %%
-<<EOF>>                                          return 'EOF';
-(\\[.\s]|[^\\\'\"\s]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+    return 'LITERAL';
-\s+                                              /* skip whitespace */
+<<EOF>>                                                    return 'EOF';
+(\\[.\s]|[^\\\'\"\s;]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+    return 'LITERAL';
+[\s;]*[\r\n;][\s;]*                                        return 'EOL'
+\s+                                                        /* skip whitespace */
 /lex
 
 %start input
-%token LITERAL EOF
+%token LITERAL EOF EOL
 
 %%
 
 input
-    : literal params EOF
-        { return { component: $1, params: $2 }; }
+    : commands
+        { return $1; }
+    ;
+
+commands
+    : /* empty */
+        { $$ = []; }
+    | commands literal params EOL
+        { $1.push({ component: $2, params: $3 }); $$ = $1; }
+    | commands literal params EOL EOF
+        { $1.push({ component: $2, params: $3 }); $$ = $1; }
+    | commands literal params EOF
+        { $1.push({ component: $2, params: $3 }); $$ = $1; }
     ;
 
 params
