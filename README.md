@@ -59,3 +59,12 @@ Example output:
 }
 ```
 Note: `parse.js` is intended for debugging only and is not part of the runtime pipeline.
+
+## Environment Variables
+
+When invoking `main`, you can pass an `env` object to control behavior:
+
+- `KLSH_VERBOSE_ERROR` (any value):
+  if present in `env`, full error details (including `String(err)`) will be appended to stderr
+
+All other `env` properties behave like shell variables available for `${VAR}` expansions.
