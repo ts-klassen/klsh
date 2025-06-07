@@ -71,10 +71,7 @@ parserFiles.forEach(file => {
     .join('\n');
   output += `  // parser: ${name}
 ${indentedCode}
-  klsh.parser['${name}'] = {
-    main: main,
-    parse: parser.parse.bind(parser)
-  };
+  klsh.parser['${name}'] = parser.parse.bind(parser);
 `;
 });
 

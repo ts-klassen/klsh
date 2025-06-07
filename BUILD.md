@@ -19,9 +19,7 @@
         - Generate a standalone parser via Jison at build time.
         - Strip the UMD/CommonJS wrapper from the generated code.
         - Inline the raw parser code into the IIFE.
-        - Attach:
-          - `main`: stubbed main from helper file (Not implemented).
-          - `parse`: real parser function bound to its parser instance.
+        - Attach the parser's `parse` function directly as `klsh.parser.<grammarName>`.
 
    - **Core components embedding**
      1. Scan `src/core/*.js` for modules.
