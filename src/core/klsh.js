@@ -13,8 +13,15 @@ function run_commands(commands, parentEnv) {
   let stderr = '';
   let env = clone(parentEnv);
   for (const cmd of commands) {
-    const name = literal_to_string(cmd.component, env);
-    const args = cmd.params.map(p => literal_to_string(p, env));
+    const nameObj = literal_to_string(cmd.component, env);
+    const name = nameObj.text;
+    stderr += nameObj.stderr;
+    const args = [];
+    for (const p of cmd.params) {
+      const argObj = literal_to_string(p, env);
+      stderr += argObj.stderr;
+      args.push(argObj.text);
+    }
     const builtin = klsh[name];
     if (builtin && typeof builtin.main === 'function') {
       const res = builtin.main({ args, stdin: '', env });
@@ -30,29 +37,31 @@ function run_commands(commands, parentEnv) {
   return { stdout, stderr, env };
 }
 
-// Convert a parsed literal (array of parts) into a single string, handling expansions and substitutions
+// Convert a parsed literal (array of parts) into a string, capturing any substitution stderr
 function literal_to_string(parts, env) {
-  let str = '';
+  let text = '';
+  let stderr = '';
   for (const part of parts) {
     switch (part.type) {
       case 'text':
-        str += part.value;
+        text += part.value;
         break;
       case 'expansion':
-        str += env[part.value] !== undefined ? env[part.value] : '';
+        text += env[part.value] !== undefined ? env[part.value] : '';
         break;
       case 'substitution': {
         const sub = run_commands(part.value, env);
+        stderr += sub.stderr;
         let val = sub.stdout;
         if (val.endsWith('\n')) val = val.slice(0, -1);
-        str += val;
+        text += val;
         break;
       }
       default:
         break;
     }
   }
-  return str;
+  return { text, stderr };
 }
 
 // Shell entrypoint: execute parsed commands from stdin
