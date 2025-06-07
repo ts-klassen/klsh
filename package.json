@@ -2,7 +2,7 @@
   "name": "klsh",
   "version": "0.1.0",
   "description": "Minimal text-based pipeline framework for browser environment",
-  "main": "src/index.js",
+  "main": "dist/klsh.js",
   "scripts": {
     "test": "npm run build && mocha --recursive tests",
     "build": "node build.js"

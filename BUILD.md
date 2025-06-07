@@ -3,18 +3,12 @@ BUILD.md
 
 Overview
 --------
-`build.js` is the project’s bundler for generating both:
- 1. `src/index.js` (for Node.js CORE API)
- 2. `dist/klsh.js` (a single UMD bundle for browser or Node)
+`build.js` is the project’s bundler for generating:
+- `dist/klsh.js` (a single UMD bundle for browser or Node)
 
 Key Steps
 ---------
-1. Generate `src/index.js`
-   - Scans `src/core/*.js` for modules
-   - Extracts each `module.exports = { ... }` to find exported keys
-   - Emits a simple file requiring each core component’s `main` function
-
-2. Bundle `dist/klsh.js`
+1. Bundle `dist/klsh.js`
    - Starts a UMD IIFE: `var klsh = {};`
    - **Parser embedding:**
      - Scans `src/parser` for any `.jison` grammars
