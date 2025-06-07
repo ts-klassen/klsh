@@ -13,10 +13,10 @@
     "text"
   ],
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
-    "mocha": "^10.2.0",
-    "chai": "^4.3.7",
+    "mocha": "11.5.0",
+    "chai": "5.2.0",
     "jison": "^0.4.18"
   }
 }
