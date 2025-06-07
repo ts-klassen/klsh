@@ -5,7 +5,8 @@
   "main": "dist/klsh.js",
   "scripts": {
     "test": "npm run build && mocha --recursive tests",
-    "build": "node build.js"
+    "build": "node build.js",
+    "parse": "npm run build && node parse.js"
   },
   "keywords": [
     "shell",

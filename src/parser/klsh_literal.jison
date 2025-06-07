@@ -1,11 +1,10 @@
 %lex
 %%
 <<EOF>>                 return 'EOF';
-\'([^\']*)\'         { yylval = yytext; return 'SQUOTE'; }
-\"([^\"\\]|\\.)*\"  { yylval = yytext; return 'DQUOTE'; }
-[^\'\"\s]+          { yylval = yytext; return 'TEXT'; }
-\s+                    /* skip whitespace */;
-.                       { yylval = yytext; return 'TEXT'; }
+\\(.|\s)                {yytext = yytext[1]; return 'TEXT'};
+\'([^\']*)\'            return 'SQUOTE';
+\"([^\"\\]|\\.)*\"      return 'DQUOTE';
+[^\\\'\"\s]+            return 'TEXT';
 /lex
 
 %start input
@@ -14,19 +13,30 @@
 %%
 
 input
-    : /* empty */ EOF             { return []; }
-    | parts EOF                   { return $1; }
+    : /* empty */ EOF
+        { return []; }
+    | parts EOF
+        { return $1; }
     ;
 
 parts
-    : item                       { $$ = [$1]; }
-    | parts item                 { $1.push($2); $$ = $1; }
+    : item
+        { $$ = [$1]; }
+    | parts item
+        { $1.push($2); $$ = $1; }
     ;
 
 item
-    : TEXT                       { $$ = { type: 'text', value: $1 }; }
-    | SQUOTE                     { var text = $1.slice(1, -1); $$ = { type: 'text', value: text }; }
-    | DQUOTE                     { var text = $1.slice(1, -1); $$ = { type: 'text', value: text }; }
+    : TEXT
+        { $$ = { type: 'text', value: klsh.parser.no_quote($1) }; }
+    | SQUOTE
+        {
+            $$ = { type: 'text', value: klsh.parser.single_quote($1) };
+        }
+    | DQUOTE
+        {
+            $$ = { type: 'text', value: klsh.parser.double_quote($1) };
+        }
     ;
 
 %%
