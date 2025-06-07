@@ -58,6 +58,7 @@ For strings with expansions or substitutions, represent each segment accordingly
 ```
 
 Here is the example JSON structure:
+
 ```json
 [{
   "component": [
