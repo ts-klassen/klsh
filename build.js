@@ -42,8 +42,29 @@ indexLines.push('};', '');
 fs.writeFileSync(indexPath, indexLines.join('\n'));
 console.log('Generated src/index.js');
 
+// Generate standalone parser code from JISON grammar (embed at build time)
+const { Parser: JisonParser } = require('jison');
+const grammarText = fs.readFileSync(path.join(__dirname, 'klsh.jison'), 'utf8');
+const fullParserCode = new JisonParser(grammarText).generate();
+// Strip UMD/commonjs export wrapper if present
+let parserCode = fullParserCode;
+const exportIdx = fullParserCode.indexOf('if (typeof require');
+if (exportIdx > 0) parserCode = fullParserCode.slice(0, exportIdx);
+
+// Begin bundle output, embedding parser
 let output = `(function(global) {
   var components = {};
+  // embedded jison-generated parser
+${parserCode.split('\n').map(line => '  ' + line).join('\n')}
+  // component: parse_klsh
+  components['parse_klsh'] = {
+    parse: parser.parse.bind(parser),
+    main: function main_parse_klsh({ args, stdin, env }) {
+      const stderr = 'Not implemented\\n';
+      const newEnv = Object.assign({}, env, { '?': 1 });
+      return { stdout: '', stderr, env: newEnv };
+    }
+  };
 `;
 
 modules.forEach(({ file, rawContent, exportKeys }) => {

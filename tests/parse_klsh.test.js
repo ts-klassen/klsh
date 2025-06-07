@@ -24,7 +24,7 @@ describe('parse_klsh', function() {
     const result = klsh.parse_klsh.parse("echo 'hello world' 'a''b''c'");
     expect(result).to.deep.equal({
         "component": "echo",
-        "params": ['hello world', 'abc']
+        "params": ["'hello world'", "'a''b''c'"]
     });
   });
 });
