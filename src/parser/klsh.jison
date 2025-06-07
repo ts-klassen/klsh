@@ -1,8 +1,8 @@
 %lex
 %%
-<<EOF>>             return 'EOF';
-([^\'\"\s]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+            return 'LITERAL';
-\s+                 /* skip whitespace */
+<<EOF>>                                          return 'EOF';
+(\\[.\s]|[^\\\'\"\s]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+    return 'LITERAL';
+\s+                                              /* skip whitespace */
 /lex
 
 %start input
@@ -11,15 +11,20 @@
 %%
 
 input
-    : LITERAL params EOF
+    : literal params EOF
         { return { component: $1, params: $2 }; }
     ;
 
 params
     : /* empty */
         { $$ = []; }
-    | params LITERAL
+    | params literal
         { $1.push($2); $$ = $1; }
+    ;
+
+literal
+    : LITERAL
+        { $$ = klsh.parser.klsh_literal($1) }
     ;
 
 %%

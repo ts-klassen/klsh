@@ -23,31 +23,109 @@ We are building a web-based application that emulates the flexibility of Bash pi
    - Track background processes and their states within the framework.
 
 ## Data Structure
-Internally, the application uses a tree-like JSON representation:
+Internally, the application uses a tree-like JSON representation. All string values are represented as arrays of segments, where each segment is an object with a `type` field. For simple literal strings without expansions or substitutions, use a single-element array containing an object of:
+
 ```json
-{
-  "component": "cat",
-  "params": ["file.txt"],
+[
+  {
+    "type": "text",
+    "value": "<original string>"
+  }
+]
+```
+
+For strings with expansions or substitutions, represent each segment accordingly. For example, the string `"Hello, ${USER}, your current directory is $(pwd)."` becomes:
+
+```json
+[
+  {
+    "type": "text",
+    "value": "Hello, "
+  },
+  {
+    "type": "expansion",
+    "value": "USER"
+  },
+  {
+    "type": "text",
+    "value": ", your current directory is "
+  },
+  {
+    "type": "substitution",
+    "value": [{"component": [[{"type": "text", "value": "pwd"}]], "params": []}]
+  }
+]
+```
+
+Here is the example JSON structure:
+
+```json
+[{
+  "component": [
+    { "type": "text", "value": "cat" }
+  ],
+  "params": [
+    [
+      { "type": "text", "value": "file.txt" }
+    ]
+  ],
   "outputs": [
     {
-      "component": "sort",
+      "component": [
+        { "type": "text", "value": "sort" }
+      ],
       "params": [],
       "outputs": [
-        { "component": "head",  "params": ["-n", "10"] },
-        { "component": "tail",  "params": ["-n", "5"]  }
+        {
+          "component": [
+            { "type": "text", "value": "head" }
+          ],
+          "params": [
+            [
+              { "type": "text", "value": "-n" }
+            ],
+            [
+              { "type": "text", "value": "10" }
+            ]
+          ]
+        },
+        {
+          "component": [
+            { "type": "text", "value": "tail" }
+          ],
+          "params": [
+            [
+              { "type": "text", "value": "-n" }
+            ],
+            [
+              { "type": "text", "value": "5" }
+            ]
+          ]
+        }
       ]
     },
     {
-      "component": "tee",
-      "params": ["error.log"],
+      "component": [
+        { "type": "text", "value": "tee" }
+      ],
+      "params": [
+        [
+          { "type": "text", "value": "error.log" }
+        ]
+      ],
       "append": false,
       "isError": true,
       "outputs": [
-        { "component": "error_handler", "params": [] }
+        {
+          "component": [
+            { "type": "text", "value": "error_handler" }
+          ],
+          "params": []
+        }
       ]
     }
   ]
-}
+}]
 ```
 
 ## Streams and Redirection Handling
