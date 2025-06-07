@@ -47,7 +47,7 @@ verify how commands and parameters are interpreted by the parser.
 
 Usage:
 ```bash
-node parse.js <<EOF
+node parse.js klsh <<EOF
 echo hello world
 EOF
 ```
