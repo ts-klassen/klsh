@@ -42,30 +42,31 @@ indexLines.push('};', '');
 fs.writeFileSync(indexPath, indexLines.join('\n'));
 console.log('Generated src/index.js');
 
-// Generate standalone parser code from JISON grammar (embed at build time)
+// Begin bundle output
+// Embed all parsers defined in src/parser
 const { Parser: JisonParser } = require('jison');
-const grammarText = fs.readFileSync(path.join(__dirname, 'klsh.jison'), 'utf8');
-const fullParserCode = new JisonParser(grammarText).generate();
-// Strip UMD/commonjs export wrapper if present
-let parserCode = fullParserCode;
-const exportIdx = fullParserCode.indexOf('if (typeof require');
-if (exportIdx > 0) parserCode = fullParserCode.slice(0, exportIdx);
-
-// Begin bundle output, embedding parser
+const parserDir = path.join(__dirname, 'src', 'parser');
+const parserFiles = fs.existsSync(parserDir)
+  ? fs.readdirSync(parserDir).filter(f => f.endsWith('.jison'))
+  : [];
 let output = `(function(global) {
   var components = {};
-  // embedded jison-generated parser
-${parserCode.split('\n').map(line => '  ' + line).join('\n')}
-  // component: parse_klsh
-  components['parse_klsh'] = {
-    parse: parser.parse.bind(parser),
-    main: function main_parse_klsh({ args, stdin, env }) {
-      const stderr = 'Not implemented\\n';
-      const newEnv = Object.assign({}, env, { '?': 1 });
-      return { stdout: '', stderr, env: newEnv };
-    }
-  };
+  components['parser'] = {};
 `;
+// For each grammar, generate a standalone parser and attach to components.parser
+parserFiles.forEach(file => {
+  const name = path.basename(file, '.jison');
+  const grammar = fs.readFileSync(path.join(parserDir, file), 'utf8');
+  const fullCode = new JisonParser(grammar).generate();
+  // strip CommonJS exports wrapper if any
+  let code = fullCode;
+  const idx = fullCode.indexOf('if (typeof require');
+  if (idx > 0) code = fullCode.slice(0, idx);
+  // indent and declare parser
+  output += `  // parser: ${name}\n`;
+  output += code.split('\n').map(line => '  ' + line).join('\n') + '\n';
+  output += `  components['parser']['${name}'] = parser.parse.bind(parser);\n`;
+});
 
 modules.forEach(({ file, rawContent, exportKeys }) => {
   const name = path.basename(file, '.js');
