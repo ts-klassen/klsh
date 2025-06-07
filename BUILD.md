@@ -25,7 +25,7 @@ Key Steps
      - Iterates over `src/core/*.js` again
      - Moves each `main` function into `klsh.<componentName>.main` and any other exports alongside
 
-3. Output
+2. Output
    - Writes `dist/klsh.js` containing:
      ```js
      (function(global) {
