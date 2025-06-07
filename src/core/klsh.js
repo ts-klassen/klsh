@@ -1,23 +1,33 @@
+// Deep-clone an object, using structuredClone if available, otherwise JSON fallback
+function clone(obj) {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  } else {
+    return JSON.parse(JSON.stringify(obj));
+  }
+}
+
 // Execute an array of parsed commands and return accumulated output, error, and environment
-function run_commands(commands, env) {
+function run_commands(commands, parentEnv) {
   let stdout = '';
   let stderr = '';
-  let currentEnv = Object.assign({}, env);
+  let env = clone(parentEnv);
   for (const cmd of commands) {
-    const name = literal_to_string(cmd.component, currentEnv);
-    const args = cmd.params.map(p => literal_to_string(p, currentEnv));
+    const name = literal_to_string(cmd.component, env);
+    const args = cmd.params.map(p => literal_to_string(p, env));
     const builtin = klsh[name];
     if (builtin && typeof builtin.main === 'function') {
-      const res = builtin.main({ args, stdin: '', env: currentEnv });
+      const res = builtin.main({ args, stdin: '', env });
       stdout += res.stdout;
       stderr += res.stderr;
-      currentEnv = res.env;
+      env = clone(res.env);
     } else {
       stderr += `${name}: command not found\n`;
-      currentEnv = Object.assign({}, currentEnv, { '?': 127 });
+      env['?'] = 127;
+      env = clone(env);
     }
   }
-  return { stdout, stderr, env: currentEnv };
+  return { stdout, stderr, env };
 }
 
 // Convert a parsed literal (array of parts) into a single string, handling expansions and substitutions
@@ -32,7 +42,7 @@ function literal_to_string(parts, env) {
         str += env[part.value] !== undefined ? env[part.value] : '';
         break;
       case 'substitution': {
-        const sub = run_commands(part.value, Object.assign({}, env));
+        const sub = run_commands(part.value, env);
         let val = sub.stdout;
         if (val.endsWith('\n')) val = val.slice(0, -1);
         str += val;
