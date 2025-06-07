@@ -6,7 +6,8 @@
   "scripts": {
     "test": "npm run build && mocha --recursive tests",
     "build": "node build.js",
-    "parse": "npm run build && node parse.js"
+    "parse": "node build.js && exec $(command -v rlwrap >/dev/null 2>&1 && echo rlwrap) node parse.js",
+    "start": "node build.js && command -v rlwrap >/dev/null && rlwrap node klsh.js || node klsh.js"
   },
   "keywords": [
     "shell",
