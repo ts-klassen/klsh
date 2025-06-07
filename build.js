@@ -47,10 +47,13 @@ if (fs.existsSync(helperPath)) {
   helperSrc = raw.replace(/module\.exports\s*=\s*\{[^}]*\};?/, '');
 }
 if (helperSrc) {
-  output += helperSrc.split('\n').map(line => '  ' + line).join('\n') + '\n';
-  helperExports.forEach(fn => {
-    output += `  klsh.parser['${fn}'] = ${fn};\n`;
-  });
+  const indentedHelper = helperSrc
+    .split('\n')
+    .map(line => '  ' + line)
+    .join('\n');
+  output += `${indentedHelper}
+${helperExports.map(fn => `  klsh.parser['${fn}'] = ${fn};`).join('\n')}
+`;
 }
 // For each grammar, generate a standalone parser and attach to components.parser
 parserFiles.forEach(file => {
@@ -62,13 +65,17 @@ parserFiles.forEach(file => {
   const idx = fullCode.indexOf('if (typeof require');
   if (idx > 0) code = fullCode.slice(0, idx);
   // embed parser implementation
-  output += `  // parser: ${name}\n`;
-  output += code.split('\n').map(line => '  ' + line).join('\n') + '\n';
-  // attach parser object with shared main stub and real parse function
-  output += `  klsh.parser['${name}'] = {\n`;
-  output += `    main: main,\n`;
-  output += `    parse: parser.parse.bind(parser)\n`;
-  output += `  };\n`;
+  const indentedCode = code
+    .split('\n')
+    .map(line => '  ' + line)
+    .join('\n');
+  output += `  // parser: ${name}
+${indentedCode}
+  klsh.parser['${name}'] = {
+    main: main,
+    parse: parser.parse.bind(parser)
+  };
+`;
 });
 
 modules.forEach(({ file, rawContent, exportKeys }) => {
@@ -80,10 +87,13 @@ modules.forEach(({ file, rawContent, exportKeys }) => {
   // Replace requires to other core modules with component references
   content = content.replace(/require\(\s*['"]\.\/([\w-]+)['"]\s*\)/g, "klsh['$1']");
   // Wrap module code and assign exports
-  output += `
-  // component: ${name}
+  const indentedContent = content
+    .split('\n')
+    .map(line => '    ' + line)
+    .join('\n');
+  output += `  // component: ${name}
   (function() {
-${content.split('\n').map(line => '    ' + line).join('\n')}
+${indentedContent}
     klsh['${name}'] = { ${exportKeys.map(key => `${key}: ${key === 'main' ? name : key}`).join(', ')} };
   })();
 `;
