@@ -38,3 +38,24 @@ This generates `dist/klsh.js`. Include it in your HTML:
   console.log(result.stdout);
 </script>
 ```
+
+## Debugging with parse.js
+
+For debugging and development, `parse.js` is a simple CLI tool that uses our Jison grammar
+to parse a single klsh command and output the resulting JSON structure. It helps you
+verify how commands and parameters are interpreted by the parser.
+
+Usage:
+```bash
+node parse.js klsh <<EOF
+echo hello world
+EOF
+```
+Example output:
+```json
+{
+    "component": "echo",
+    "params": ["hello", "world"]
+}
+```
+Note: `parse.js` is intended for debugging only and is not part of the runtime pipeline.
