@@ -24,10 +24,17 @@ function run_commands(commands, parentEnv) {
     }
     const builtin = klsh[name];
     if (builtin && typeof builtin.main === 'function') {
-      const res = builtin.main({ args, stdin: '', env });
-      stdout += res.stdout;
-      stderr += res.stderr;
-      env = clone(res.env);
+      try {
+        const res = builtin.main({ args, stdin: '', env });
+        stdout += res.stdout;
+        stderr += res.stderr;
+        env = clone(res.env);
+      } catch (err) {
+        stderr += (err.message || 'Error') + '\n';
+        if (err.stack) stderr += err.stack + '\n';
+        env['?'] = 255;
+        env = clone(env);
+      }
     } else {
       stderr += `${name}: command not found\n`;
       env['?'] = 127;
