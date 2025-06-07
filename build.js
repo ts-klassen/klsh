@@ -79,8 +79,6 @@ modules.forEach(({ file, rawContent, exportKeys }) => {
   const name = path.basename(file, '.js');
   // Remove module.exports assignment
   let content = rawContent.replace(/module\.exports\s*=\s*\{[^}]*\};?/, '');
-  // Rename main to module name
-  content = content.replace(/function\s+main/, `function ${name}`);
   // Replace requires to other core modules with component references
   content = content.replace(/require\(\s*['"]\.\/([\w-]+)['"]\s*\)/g, "klsh['$1']");
   // Wrap module code and assign exports
@@ -91,7 +89,7 @@ modules.forEach(({ file, rawContent, exportKeys }) => {
   output += `  // component: ${name}
   (function() {
 ${indentedContent}
-    klsh['${name}'] = { ${exportKeys.map(key => `${key}: ${key === 'main' ? name : key}`).join(', ')} };
+    klsh['${name}'] = { ${exportKeys.map(key => `${key}: ${key}`).join(', ')} };
   })();
 `;
 });

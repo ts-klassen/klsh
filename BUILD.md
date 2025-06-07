@@ -26,8 +26,8 @@
      2. For each module:
         - Parse `module.exports = {...}` to find exported keys.
         - Remove the `module.exports` line.
-        - Rename `main` function to the module name.
-        - Inline the code and attach each export under `klsh.<componentName>`.
+        - Keep function names unchanged (no renaming).
+        - Inline the code, then attach each export under `klsh.<componentName>`.
 
 ## Output
 
