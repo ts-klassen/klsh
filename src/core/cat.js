@@ -52,6 +52,17 @@ function main({ args = [], stdin = '', env = {} }) {
     prevBlank = isBlank;
   }
   // build output
+  // determine minimum field width for line numbers (at least 6, expand if needed)
+  const defaultNumWidth = 6;
+  let numWidth = defaultNumWidth;
+  if (numberAll) {
+    const totalLines = processed.length;
+    numWidth = Math.max(numWidth, String(totalLines).length);
+  }
+  if (numberNonblank) {
+    const totalNonblank = processed.filter(item => item.content !== '').length;
+    numWidth = Math.max(numWidth, String(totalNonblank).length);
+  }
   let lineNum = 1;
   const out = [];
   for (const { content, hasLf } of processed) {
@@ -68,7 +79,7 @@ function main({ args = [], stdin = '', env = {} }) {
     if (showEnds) s += '$';
     let prefix = '';
     if ((numberNonblank && content !== '') || numberAll) {
-      prefix = String(lineNum).padStart(6, ' ') + '\t';
+      prefix = String(lineNum).padStart(numWidth, ' ') + '\t';
       lineNum++;
     }
     out.push(prefix + s + (hasLf ? '\n' : ''));
