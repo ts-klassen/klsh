@@ -62,11 +62,6 @@ for (const file of defs) {
   // Determine command parts
   const parts = command.split(/\s+/).filter(Boolean);
   const name = parts[0];
-  // Only generate for built-in commands
-  if (!klsh[name] || typeof klsh[name].main !== 'function') {
-    console.warn(`Skipping ${file}: no builtin '${name}' in klsh`);
-    continue;
-  }
   // Prepare test file content
   const testName = path.basename(file, path.extname(file)).replace(/[^a-zA-Z0-9_]/g, '_');
   const outFile = path.join(outDir, testName + '.test.js');
