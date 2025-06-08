@@ -17,7 +17,10 @@ function main({ args = [], stdin = '', env = {} }) {
       const content = hasNl && lines[lines.length - 1] === ''
         ? lines.slice(0, -1)
         : lines;
-      const numbered = content.map((line, idx) => `${idx + 1}\t${line}`);
+      const numbered = content.map((line, idx) => {
+        const num = String(idx + 1).padStart(6, ' ');
+        return `${num}\t${line}`;
+      });
       stdout = numbered.join('\n') + (hasNl ? '\n' : '');
     }
   } else {

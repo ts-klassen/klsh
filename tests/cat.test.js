@@ -10,14 +10,14 @@ describe('cat', function() {
 
   it('numbers all output lines with -n option', function() {
     const text = "first line\nsecond line\nthird line\n"
-    const rtext = "1\tfirst line\n2\tsecond line\n3\tthird line\n"
+    const rtext = "     1\tfirst line\n     2\tsecond line\n     3\tthird line\n"
     const result = klsh.cat.main({ args: ['-n'], stdin: text, env: {} });
     expect(result).to.deep.equal({stdout: rtext, stderr: '', env: {'?': 0}});
   });
 
   it('numbers all output lines with --number option', function() {
     const text = "alpha\nbeta\n"
-    const rtext = "1\talpha\n2\tbeta\n"
+    const rtext = "     1\talpha\n     2\tbeta\n"
     const result = klsh.cat.main({ args: ['--number'], stdin: text, env: {} });
     expect(result).to.deep.equal({stdout: rtext, stderr: '', env: {'?': 0}});
   });
@@ -40,7 +40,7 @@ describe('cat', function() {
 
   it('numbers input without trailing newline with -n', function() {
     const input = "a\nb";
-    const rtext = "1\ta\n2\tb";
+    const rtext = "     1\ta\n     2\tb";
     const result = klsh.cat.main({ args: ['-n'], stdin: input, env: {} });
     expect(result).to.deep.equal({ stdout: rtext, stderr: "", env: {'?': 0} });
   });
@@ -53,7 +53,7 @@ describe('cat', function() {
 
   it('numbers single line input without newline with -n', function() {
     const input = "solo";
-    const rtext = "1\tsolo";
+    const rtext = "     1\tsolo";
     const result = klsh.cat.main({ args: ['-n'], stdin: input, env: {} });
     expect(result).to.deep.equal({ stdout: rtext, stderr: "", env: {'?': 0} });
   });
@@ -66,7 +66,7 @@ describe('cat', function() {
 
   it('numbers input with only newlines with -n', function() {
     const input = "\n\n";
-    const rtext = "1\t\n2\t\n";
+    const rtext = "     1\t\n     2\t\n";
     const result = klsh.cat.main({ args: ['-n'], stdin: input, env: {} });
     expect(result).to.deep.equal({ stdout: rtext, stderr: "", env: {'?': 0} });
   });
