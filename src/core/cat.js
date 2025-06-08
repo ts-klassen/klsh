@@ -1,33 +1,79 @@
-// 'cat' command: output stdin unchanged
+// 'cat' command: output stdin with GNU-like options
 function main({ args = [], stdin = '', env = {} }) {
-  // parse options: support -n, --number to number all output lines
+  // parse supported options
   const optionSpec = [
-    { key: 'number', short_tag: 'n', long_tag: 'number', spec: 'flag', help: 'number all output lines' }
+    { key: 'number', short_tag: 'n', long_tag: 'number', spec: 'flag', help: 'number all output lines' },
+    { key: 'number_nonblank', short_tag: 'b', long_tag: 'number-nonblank', spec: 'flag', help: 'number nonempty output lines' },
+    { key: 'squeeze_blank', short_tag: 's', long_tag: 'squeeze-blank', spec: 'flag', help: 'suppress repeated empty output lines' },
+    { key: 'show_nonprinting', short_tag: 'v', long_tag: 'show-nonprinting', spec: 'flag', help: 'use ^ and M- notation, except for LFD and TAB' },
+    { key: 'show_ends', short_tag: 'E', long_tag: 'show-ends', spec: 'flag', help: 'display $ at end of each line' },
+    { key: 'show_tabs', short_tag: 'T', long_tag: 'show-tabs', spec: 'flag', help: 'display TAB characters as ^I' },
+    { key: 'show_all', short_tag: 'A', long_tag: 'show-all', spec: 'flag', help: 'equivalent to -vET' },
+    { key: 'opt_e', short_tag: 'e', long_tag: '', spec: 'flag', help: 'equivalent to -vE' },
+    { key: 'opt_t', short_tag: 't', long_tag: '', spec: 'flag', help: 'equivalent to -vT' }
   ];
-  const { options } = klsh.parse_args.parse(args, optionSpec);
-  let stdout;
-  if (options.number) {
-    // If stdin is empty, output nothing (no line numbers)
-    if (stdin === '') {
-      stdout = '';
+  const { options, unknown } = klsh.parse_args.parse(args, optionSpec);
+  // handle unrecognized options
+  if (unknown && unknown.length > 0) {
+    const opt = unknown[0];
+    let msg;
+    if (opt.startsWith('--')) {
+      msg = `cat: unrecognized option '${opt}'\nTry 'cat --help' for more information.\n`;
+    } else if (opt.startsWith('-') && opt.length === 2) {
+      const ch = opt[1];
+      msg = `cat: invalid option -- '${ch}'\nTry 'cat --help' for more information.\n`;
     } else {
-      const hasNl = stdin.endsWith('\n');
-      const lines = stdin.split('\n');
-      const content = hasNl && lines[lines.length - 1] === ''
-        ? lines.slice(0, -1)
-        : lines;
-      const numbered = content.map((line, idx) => {
-        const num = String(idx + 1).padStart(6, ' ');
-        return `${num}\t${line}`;
-      });
-      stdout = numbered.join('\n') + (hasNl ? '\n' : '');
+      msg = `cat: unrecognized argument '${opt}'\nTry 'cat --help' for more information.\n`;
     }
-  } else {
-    stdout = stdin;
+    return { stdout: '', stderr: msg, env: Object.assign({}, env, { '?': 1 }) };
   }
-  const stderr = '';
-  const newEnv = Object.assign({}, env, { '?': 0 });
-  return { stdout, stderr, env: newEnv };
+  // derive flags, with -b overriding -n
+  let numberAll = options.number === true;
+  const numberNonblank = options.number_nonblank === true;
+  if (numberNonblank) numberAll = false;
+  const squeezeBlank = options.squeeze_blank === true;
+  let showNonprinting = options.show_nonprinting === true;
+  let showEnds = options.show_ends === true;
+  let showTabs = options.show_tabs === true;
+  if (options.opt_e === true) { showNonprinting = true; showEnds = true; }
+  if (options.opt_t === true) { showNonprinting = true; showTabs = true; }
+  if (options.show_all === true) { showNonprinting = true; showEnds = true; showTabs = true; }
+  // split input into segments including line endings
+  const segments = stdin === '' ? [] : stdin.match(/[^\n]*\n|[^\n]+$/g) || [];
+  // process blank squeezing
+  const processed = [];
+  let prevBlank = false;
+  for (const seg of segments) {
+    const hasLf = seg.endsWith('\n');
+    const content = hasLf ? seg.slice(0, -1) : seg;
+    const isBlank = content === '';
+    if (squeezeBlank && isBlank && prevBlank) continue;
+    processed.push({ content, hasLf });
+    prevBlank = isBlank;
+  }
+  // build output
+  let lineNum = 1;
+  const out = [];
+  for (const { content, hasLf } of processed) {
+    let s = content;
+    if (showTabs) s = s.replace(/\t/g, '^I');
+    if (showNonprinting) {
+      s = s.split('').map(c => {
+        const code = c.charCodeAt(0);
+        if (code >= 0 && code < 32 && c !== '\t') return '^' + String.fromCharCode(code + 64);
+        if (code === 127) return '^?';
+        return c;
+      }).join('');
+    }
+    if (showEnds) s += '$';
+    let prefix = '';
+    if ((numberNonblank && content !== '') || numberAll) {
+      prefix = String(lineNum).padStart(6, ' ') + '\t';
+      lineNum++;
+    }
+    out.push(prefix + s + (hasLf ? '\n' : ''));
+  }
+  return { stdout: out.join(''), stderr: '', env: Object.assign({}, env, { '?': 0 }) };
 }
 
 module.exports = { main };
