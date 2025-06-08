@@ -161,4 +161,20 @@ describe('parser', function() {
         ]
     }]);
   });
+  it('parse single pipe', function() {
+    const result = klsh.parser.klsh('echo hello world | cat -n');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'hello'}],
+            [{"type": "text", "value": 'world'}]
+        ],
+        "pipe": {
+            "component": [{"type": "text", "value": "cat"}],
+            "params": [
+                [{"type": "text", "value": '-n'}]
+            ]
+        }
+    }]);
+  });
 });
