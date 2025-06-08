@@ -64,6 +64,43 @@ Example output:
 
 Note: `parse.js` is intended for debugging only and is not part of the runtime pipeline.
 
+## Running the CLI with `npm start`
+
+The `npm start` script builds the project and launches the `klsh` command-line interface. If you have [`rlwrap`](https://github.com/hanshuebner/rlwrap) installed, it will provide readline support (editing and history).
+
+Interactive mode:
+
+```bash
+$ npm start
+```
+
+Type one or more `klsh` pipeline commands, then press Ctrl-D (EOF) to execute them. Example:
+
+```bash
+$ npm start
+echo hello world
+^D
+{ stdout: 'hello world\n', stderr: '', exitCode: 0 }
+```
+
+Non-interactive mode (pipe a single command):
+
+```bash
+echo 'echo hello world' | npm start
+```
+
+Or read commands from a file:
+
+```bash
+npm start < commands.txt
+```
+
+The CLI outputs a JSON object with the following properties:
+
+- `stdout`: the combined standard output of the pipeline
+- `stderr`: the combined standard error of the pipeline
+- `exitCode`: the exit code of the pipeline
+
 ## Environment Variables
 
 When invoking `main`, you can pass an `env` object to control behavior:
