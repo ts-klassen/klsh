@@ -1,4 +1,4 @@
-// Auto-generated from echo_hello_world.txt. Do not edit.
+// Auto-generated from echo_hello_world.json. Do not edit.
 const { expect } = require('chai');
 const klsh = require('../../dist/klsh.js');
 
