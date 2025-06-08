@@ -1,13 +1,14 @@
 %lex
 %%
-<<EOF>>                                                    return 'EOF';
-(\\[.\s]|[^\\\'\"\s;]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+    return 'LITERAL';
-[\s;]*[\r\n;][\s;]*                                        return 'EOL'
-\s+                                                        /* skip whitespace */
+<<EOF>>                                                     return 'EOF';
+\|                                                          return 'PIPE';
+(\\(.|\s)|[^\\\'\"\s;|]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+  return 'LITERAL';
+[\s;]*[\r\n;][\s;]*                                         return 'EOL'
+\s+                                                         /* skip whitespace */
 /lex
 
 %start input
-%token LITERAL EOF EOL
+%token LITERAL PIPE EOF EOL
 
 %%
 
@@ -19,12 +20,19 @@ input
 commands
     : /* empty */
         { $$ = []; }
-    | commands literal params EOL
-        { $1.push({ component: $2, params: $3 }); $$ = $1; }
-    | commands literal params EOL EOF
-        { $1.push({ component: $2, params: $3 }); $$ = $1; }
-    | commands literal params EOF
-        { $1.push({ component: $2, params: $3 }); $$ = $1; }
+    | commands command EOL
+        { $1.push($2); $$ = $1; }
+    | commands command EOL EOF
+        { $1.push($2); $$ = $1; }
+    | commands command EOF
+        { $1.push($2); $$ = $1; }
+    ;
+
+command
+    : literal params PIPE command
+        { $$ = { component: $1, params: $2, pipe: $4 } }
+    | literal params
+        { $$ = { component: $1, params: $2 } }
     ;
 
 params
