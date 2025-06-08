@@ -1,0 +1,111 @@
+
+> klsh@0.1.0 test
+> npm run build && mocha --recursive tests
+
+
+> klsh@0.1.0 build
+> node build.js
+
+Built dist/klsh.js
+
+
+  cat
+    ✔ returns the same string from stdin
+    1) numbers all output lines with -n option
+    2) numbers all output lines with --number option
+
+  echo
+    ✔ returns the same string
+    ✔ no new line
+    ✔ interprets backslash escapes with -e
+    ✔ interprets backslash (\) escape
+    ✔ interprets \a as alert (BEL)
+    ✔ interprets \b as backspace
+    ✔ interprets \c to suppress further output
+    ✔ interprets \e as escape
+    ✔ interprets \f as form feed
+    ✔ interprets \n as new line
+    ✔ interprets \r as carriage return
+    ✔ interprets \t as horizontal tab
+    ✔ interprets \v as vertical tab
+    ✔ interprets \0NNN as octal
+    ✔ interprets \xHH as hexadecimal
+
+  klsh error handling
+    ✔ handles parse errors with exit code 2
+    ✔ includes verbose error when KLSH_VERBOSE_ERROR is set
+    ✔ handles built-in errors with exit code 255
+    ✔ built-in errors are verbose when KLSH_VERBOSE_ERROR is set
+
+  klsh
+    ✔ call echo
+
+  parse_args
+    ✔ main is not implemented
+    ✔ parse non option args
+    ✔ parse flags
+    ✔ parse bundled flags
+    ✔ parse string options
+
+  parser.klsh_literal
+    ✔ simple literal string
+    ✔ string with double quotes
+    ✔ string with single quotes
+
+  parser
+    ✔ main is not implemented
+    ✔ parse no-options simple
+    ✔ parse with options
+    ✔ parse with single quote
+    ✔ parse with double quote
+    ✔ parse with quote
+    ✔ parse multiple commands separated by semicolons
+    ✔ parse multiple commands separated by newline
+    ✔ ignores trailing separators (semicolon)
+    ✔ ignores empty commands between separators
+    ✔ ignores commands with only whitespace
+    ✔ parses mixed separators (semicolon and newline)
+
+  tac
+    ✔ returns the same string from stdin
+
+
+  42 passing (15ms)
+  2 failing
+
+  1) cat
+       numbers all output lines with -n option:
+
+      AssertionError: expected { …(3) } to deeply equal { …(3) }
+      + expected - actual
+
+         "env": {
+           "?": 0
+         }
+         "stderr": ""
+      -  "stdout": "first line\nsecond line\nthird line\n"
+      +  "stdout": "1\tfirst line\n2\tsecond line\n3\tthird line\n"
+       }
+      
+      at Context.<anonymous> (tests/cat.test.js:15:28)
+      at process.processImmediate (node:internal/timers:505:21)
+
+  2) cat
+       numbers all output lines with --number option:
+
+      AssertionError: expected { stdout: 'alpha\nbeta\n', …(2) } to deeply equal { stdout: '1\talpha\n2\tbeta\n', …(2) }
+      + expected - actual
+
+         "env": {
+           "?": 0
+         }
+         "stderr": ""
+      -  "stdout": "alpha\nbeta\n"
+      +  "stdout": "1\talpha\n2\tbeta\n"
+       }
+      
+      at Context.<anonymous> (tests/cat.test.js:22:28)
+      at process.processImmediate (node:internal/timers:505:21)
+
+
+
