@@ -109,3 +109,45 @@ When invoking `main`, you can pass an `env` object to control behavior:
   if present in `env`, full error details (including `String(err)`) will be appended to stderr
 
 All other `env` properties behave like shell variables available for `${VAR}` expansions.
+## Auto-Generating Tests
+
+This project includes a helper script, `generate_tests.js`, which auto-generates Mocha/Chai tests for built-in commands by comparing against the real Bash behavior.
+
+### Test Definitions
+
+Place your test definitions in the `test_definitions/` directory, using either:
+- **.txt files**: the first line is the shell command (e.g. `cat -n`), and the remaining lines are fed as standard input.
+- **.json files**: a JSON object with two fields:
+  ```json
+  {
+    "command": "cat -n",
+    "stdin": "first line\nsecond line\n"
+  }
+  ```
+
+Each definition is passed to Bash, which produces the expected `stdout`, `stderr`, and exit code. The script then emits a corresponding test under `tests/auto_generated/`.
+
+### Generating Tests
+
+From the project root, run:
+```bash
+node generate_tests.js
+```
+
+This will:
+1. Read all `.txt` and `.json` files in `test_definitions/`.
+2. Execute each command under real Bash, capturing its outputs and exit code.
+3. Produce Mocha test files in `tests/auto_generated/`, which are automatically included in `npm test`.
+
+### Example
+
+Add a file `test_definitions/echo_hello_world.txt` with contents:
+```
+echo hello world
+```
+Then:
+```bash
+node generate_tests.js
+npm test
+```
+You will get an auto-generated test that ensures `klsh.echo.main` matches Bash’s `echo hello world`.
