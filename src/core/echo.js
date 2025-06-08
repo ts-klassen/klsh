@@ -1,5 +1,3 @@
-const { parse } = require('./parse_args');
-
 function _interpretEscapes(s) {
   let out = '';
   let suppressed = false;
@@ -76,7 +74,7 @@ function main({ args = [], stdin = '', env = {} }) {
     { key: 'no_newline', short_tag: 'n', spec: 'flag', help: 'do not output the trailing newline' },
     { key: 'interpret_escapes', short_tag: 'e', spec: 'flag', help: eHelp }
   ];
-  const { options, operands } = parse(args, optionSpec);
+  const { options, operands } = klsh.parse_args.parse(args, optionSpec);
   const noNl = options.no_newline === true;
   const interp = options.interpret_escapes === true;
   let stdout;

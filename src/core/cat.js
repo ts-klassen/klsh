@@ -1,11 +1,10 @@
 // 'cat' command: output stdin unchanged
 function main({ args = [], stdin = '', env = {} }) {
   // parse options: support -n, --number to number all output lines
-  const { parse } = require('./parse_args');
   const optionSpec = [
     { key: 'number', short_tag: 'n', long_tag: 'number', spec: 'flag', help: 'number all output lines' }
   ];
-  const { options } = parse(args, optionSpec);
+  const { options } = klsh.parse_args.parse(args, optionSpec);
   let stdout;
   if (options.number) {
     // If stdin is empty, output nothing (no line numbers)
