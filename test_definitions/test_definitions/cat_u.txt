@@ -1,0 +1,3 @@
+cat -u
+foo
+bar

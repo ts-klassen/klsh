@@ -1,0 +1,4 @@
+cat --number-nonblank
+line 1
+
+line 3

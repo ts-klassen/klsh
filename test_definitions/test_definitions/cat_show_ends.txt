@@ -1,0 +1,3 @@
+cat --show-ends
+foo
+bar
