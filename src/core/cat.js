@@ -8,13 +8,18 @@ function main({ args = [], stdin = '', env = {} }) {
   const { options } = parse(args, optionSpec);
   let stdout;
   if (options.number) {
-    const hasNl = stdin.endsWith('\n');
-    const lines = stdin.split('\n');
-    const content = hasNl && lines[lines.length - 1] === ''
-      ? lines.slice(0, -1)
-      : lines;
-    const numbered = content.map((line, idx) => `${idx + 1}\t${line}`);
-    stdout = numbered.join('\n') + (hasNl ? '\n' : '');
+    // If stdin is empty, output nothing (no line numbers)
+    if (stdin === '') {
+      stdout = '';
+    } else {
+      const hasNl = stdin.endsWith('\n');
+      const lines = stdin.split('\n');
+      const content = hasNl && lines[lines.length - 1] === ''
+        ? lines.slice(0, -1)
+        : lines;
+      const numbered = content.map((line, idx) => `${idx + 1}\t${line}`);
+      stdout = numbered.join('\n') + (hasNl ? '\n' : '');
+    }
   } else {
     stdout = stdin;
   }
