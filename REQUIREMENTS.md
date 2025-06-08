@@ -7,7 +7,7 @@ We are building a web-based application that emulates the flexibility of Bash pi
 1. **Components and Pipelines**
    - Users can define reusable components, each performing a specific function (e.g., `cat`, `sort`, `head`, `tail`).
    - Components can be chained into pipelines where the output of one feeds into the next.
-   - Branching pipelines are supported: a single component's output can connect to multiple downstream components.
+   - Each component can pipe its output to a single downstream component only (no branching).
 2. **I/O Redirection and Appending**
    - Input redirection from files using shell-style syntax (`< file.txt`).
    - Output redirection to files with overwrite (`> file.txt`) or append (`>> file.txt`).
@@ -60,72 +60,37 @@ For strings with expansions or substitutions, represent each segment accordingly
 Here is the example JSON structure:
 
 ```json
-[{
-  "component": [
-    { "type": "text", "value": "cat" }
-  ],
-  "params": [
-    [
-      { "type": "text", "value": "file.txt" }
-    ]
-  ],
-  "outputs": [
-    {
+[
+  {
+    "component": [
+      { "type": "text", "value": "cat" }
+    ],
+    "params": [
+      [
+        { "type": "text", "value": "file.txt" }
+      ]
+    ],
+    "pipe": {
       "component": [
         { "type": "text", "value": "sort" }
       ],
       "params": [],
-      "outputs": [
-        {
-          "component": [
-            { "type": "text", "value": "head" }
+      "pipe": {
+        "component": [
+          { "type": "text", "value": "head" }
+        ],
+        "params": [
+          [
+            { "type": "text", "value": "-n" }
           ],
-          "params": [
-            [
-              { "type": "text", "value": "-n" }
-            ],
-            [
-              { "type": "text", "value": "10" }
-            ]
+          [
+            { "type": "text", "value": "10" }
           ]
-        },
-        {
-          "component": [
-            { "type": "text", "value": "tail" }
-          ],
-          "params": [
-            [
-              { "type": "text", "value": "-n" }
-            ],
-            [
-              { "type": "text", "value": "5" }
-            ]
-          ]
-        }
-      ]
-    },
-    {
-      "component": [
-        { "type": "text", "value": "tee" }
-      ],
-      "params": [
-        [
-          { "type": "text", "value": "error.log" }
         ]
-      ],
-      "append": false,
-      "isError": true,
-      "outputs": [
-        {
-          "component": [
-            { "type": "text", "value": "error_handler" }
-          ],
-          "params": []
-        }
-      ]
+      }
     }
-  ]
-}]
+  }
+]
 ```
 
 ## Streams and Redirection Handling
