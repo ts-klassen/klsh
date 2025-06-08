@@ -197,4 +197,66 @@ describe('parser', function() {
         }
     }]);
   });
+
+  it('parse pipe with quoted arguments containing pipe characters', function() {
+    const result = klsh.parser.klsh('echo "a|b|c" | grep "|b"');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+            [{"type": "text", "value": 'a|b|c'}]
+        ],
+        "pipe": {
+            "component": [{"type": "text", "value": "grep"}],
+            "params": [
+                [{"type": "text", "value": '|b'}]
+            ]
+        }
+    }]);
+  });
+
+  it('parse multiple parameters after pipe', function() {
+    const result = klsh.parser.klsh('ls -l | sort -r -n');
+    expect(result).to.deep.equal([{
+        "component": [{"type": "text", "value": "ls"}],
+        "params": [
+            [{"type": "text", "value": '-l'}]
+        ],
+        "pipe": {
+            "component": [{"type": "text", "value": "sort"}],
+            "params": [
+                [{"type": "text", "value": '-r'}],
+                [{"type": "text", "value": '-n'}]
+            ]
+        }
+    }]);
+  });
+
+  it('parse pipes combined with semicolons', function() {
+    const result = klsh.parser.klsh('echo foo | cat; echo bar | cat -n');
+    expect(result).to.deep.equal([
+        {
+            "component": [{"type": "text", "value": "echo"}],
+            "params": [
+                [{"type": "text", "value": 'foo'}]
+            ],
+            "pipe": {
+                "component": [{"type": "text", "value": "cat"}],
+                "params": []
+            }
+        },
+        {
+            "component": [{"type": "text", "value": "echo"}],
+            "params": [
+                [{"type": "text", "value": 'bar'}]
+            ],
+            "pipe": {
+                "component": [{"type": "text", "value": "cat"}],
+                "params": [
+                    [{"type": "text", "value": '-n'}]
+                ]
+            }
+        }
+    ]);
+  });
+
 });
