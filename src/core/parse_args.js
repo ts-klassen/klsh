@@ -2,7 +2,7 @@
 // args: array of strings; optionSpec: array of option definitions
 // Returns { options: {}, operands: [], unknown: [] }
 // CLI entrypoint: currently not implemented
-function main({ args = [], stdin = '', env = {} }) {
+async function main({ args = [], stdin = '', env = {} }) {
   const stderr = 'Not implemented\n';
   const newEnv = Object.assign({}, env, { '?': 1 });
   return { stdout: '', stderr, env: newEnv };

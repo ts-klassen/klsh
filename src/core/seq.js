@@ -1,6 +1,6 @@
 // 'seq' command: generate numeric sequences
 // 'seq' command: generate numeric sequences with support for -f, -s, -w flags
-function main({ args = [], stdin = '', env = {} }) {
+async function main({ args = [], stdin = '', env = {} }) {
   // parse flags
   let fmt = null;
   let sep = '\n';
