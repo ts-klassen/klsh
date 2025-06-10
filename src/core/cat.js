@@ -74,7 +74,7 @@ async function main({ args = [], stdin = '', env = {} }) {
   let numWidth = defaultNumWidth;
   if (numberAll) {
     const totalLines = processed.length;
-    numWidth = Math.max(numWidth, String(totalLines).length-1);
+    numWidth = Math.max(numWidth, String(totalLines).length);
   }
   if (numberNonblank) {
     const totalNonblank = processed.filter(item => item.content !== '').length;
