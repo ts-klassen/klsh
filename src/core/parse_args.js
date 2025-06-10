@@ -58,6 +58,16 @@ function parse(args, optionSpec) {
         }
       }
     } else if (token.startsWith('-') && token.length > 1) {
+      // handle short option with attached string value, e.g., -n1 or -c64
+      if (token.length > 2) {
+        const name = token[1];
+        const specStr = optionSpec.find(o => o.short_tag === name && o.spec === 'string');
+        if (specStr) {
+          options[specStr.key] = token.slice(2);
+          i++;
+          continue;
+        }
+      }
       if (token.length === 2) {
         const name = token[1];
         const spec = optionSpec.find(o => o.short_tag === name);

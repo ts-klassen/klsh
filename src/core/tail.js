@@ -2,63 +2,35 @@
 const fs = require('./fs');
 
 async function main({ args = [], stdin = '', env = {} }) {
-  // parse options
+  // parse options using generic parser
+  const parseArgs = require('./parse_args');
+  const optionSpec = [
+    { key: 'lines', short_tag: 'n', long_tag: 'lines', spec: 'string', help: 'print the last NUM lines' },
+    { key: 'bytes', short_tag: 'c', long_tag: 'bytes', spec: 'string', help: 'print the last NUM bytes' }
+  ];
+  const { options, operands, unknown } = parseArgs.parse(args, optionSpec);
+  // handle unrecognized options
+  if (unknown && unknown.length > 0) {
+    const opt = unknown[0];
+    const msg = `tail: unrecognized option '${opt}'\nTry 'tail --help' for more information.\n`;
+    return { stdout: '', stderr: msg, env: Object.assign({}, env, { '?': 1 }) };
+  }
+  // determine mode and count
   let mode = 'lines';
   let countValue;
-  let i = 0;
-  while (i < args.length) {
-    const token = args[i];
-    if (token === '--') {
-      i++;
-      break;
-    } else if (token.startsWith('--lines=')) {
-      mode = 'lines';
-      countValue = token.slice('--lines='.length);
-      i++;
-    } else if (token === '--lines') {
-      mode = 'lines';
-      countValue = args[i + 1];
-      i += 2;
-    } else if (token.startsWith('--bytes=')) {
-      mode = 'bytes';
-      countValue = token.slice('--bytes='.length);
-      i++;
-    } else if (token === '--bytes') {
-      mode = 'bytes';
-      countValue = args[i + 1];
-      i += 2;
-    } else if (token.startsWith('-') && token.length > 1) {
-      const opt = token[1];
-      if (opt === 'n') {
-        mode = 'lines';
-        if (token.length > 2) {
-          countValue = token.slice(2);
-          i++;
-        } else {
-          countValue = args[i + 1];
-          i += 2;
-        }
-      } else if (opt === 'c') {
-        mode = 'bytes';
-        if (token.length > 2) {
-          countValue = token.slice(2);
-          i++;
-        } else {
-          countValue = args[i + 1];
-          i += 2;
-        }
-      } else {
-        break;
-      }
-    } else {
-      break;
-    }
+  if (options.bytes !== undefined) {
+    mode = 'bytes';
+    countValue = options.bytes;
+  } else if (options.lines !== undefined) {
+    mode = 'lines';
+    countValue = options.lines;
   }
-  const operands = args.slice(i);
+  // set up operands as files
+  const files = operands;
   // read input
   let input = '';
-  if (operands.length > 0) {
-    for (const file of operands) {
+  if (files.length > 0) {
+    for (const file of files) {
       try {
         input += await fs.readFile(file);
       } catch (err) {
