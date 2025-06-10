@@ -10,7 +10,8 @@ async function main({ args = [], stdin = '', env = {} }) {
     { key: 'show_tabs', short_tag: 'T', long_tag: 'show-tabs', spec: 'flag', help: 'display TAB characters as ^I' },
     { key: 'show_all', short_tag: 'A', long_tag: 'show-all', spec: 'flag', help: 'equivalent to -vET' },
     { key: 'opt_e', short_tag: 'e', long_tag: '', spec: 'flag', help: 'equivalent to -vE' },
-    { key: 'opt_t', short_tag: 't', long_tag: '', spec: 'flag', help: 'equivalent to -vT' }
+    { key: 'opt_t', short_tag: 't', long_tag: '', spec: 'flag', help: 'equivalent to -vT' },
+    { key: 'opt_u', short_tag: 'u', long_tag: '', spec: 'flag', help: 'ignored' }
   ];
   const { options, operands, unknown } = klsh.parse_args.parse(args, optionSpec);
   // handle unrecognized options
