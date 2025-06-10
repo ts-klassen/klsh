@@ -2,8 +2,8 @@ const { expect } = require('chai');
 const klsh = require('../dist/klsh.js');
 
 describe('parse_args', function() {
-  it('main is not implemented', function() {
-    const result = klsh.parse_args.main({ args: [], stdin: '', env: {} });
+  it('main is not implemented', async function() {
+    const result = await klsh.parse_args.main({ args: [], stdin: '', env: {} });
     expect(result).to.deep.equal({stdout: '', stderr: 'Not implemented\n', env: {'?': 1}});
   });
   it('parse non option args', function() {

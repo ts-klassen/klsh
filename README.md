@@ -151,3 +151,41 @@ node generate_tests.js
 npm test
 ```
 You will get an auto-generated test that ensures `klsh.echo.main` matches Bash’s `echo hello world`.
+
+## File I/O Emulation
+
+klsh now supports an in-memory filesystem using IndexedDB (via
+`fake-indexeddb` in Node). You can read and write “files” directly in your
+pipelines:
+
+- Write data to a file:
+
+```bash
+echo "Hello" | dd of=filename.txt
+```
+
+- Read data from a file:
+
+```bash
+cat filename.txt
+```
+
+The `dd` command supports:
+
+- `if=INFILE`   Read from the given file (default: stdin)
+- `of=OUTFILE`  Write to the given file (default: stdout)
+- `bs=BYTES`    Block size in bytes (default: 512)
+- `count=N`     Number of blocks to copy (default: all)
+
+**Example** (using the interactive CLI):
+
+```bash
+$ npm start
+echo "Hello via dd" | dd of=greeting.txt
+cat greeting.txt
+^D
+```
+
+```
+{ stdout: 'Hello via dd\n', stderr: '', env: {'?': 0} }
+```

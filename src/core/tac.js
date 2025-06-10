@@ -1,5 +1,5 @@
 // 'tac' command: reverse lines of stdin
-function main({ args = [], stdin = '', env = {} }) {
+async function main({ args = [], stdin = '', env = {} }) {
   const hasTrailingNewline = stdin.endsWith('\n');
   const lines = stdin.split('\n');
   let contentLines = lines;

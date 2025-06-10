@@ -5,7 +5,7 @@ const klsh = require('./dist/klsh.js');
 let stdin = '';
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', chunk => { stdin += chunk; });
-process.stdin.on('end', () => {
-    res = klsh.klsh.main({stdin, env: {'KLSH_VERBOSE_ERROR': '1'}, args: []});
+process.stdin.on('end', async () => {
+    const res = await klsh.klsh.main({stdin, env: {'KLSH_VERBOSE_ERROR': '1'}, args: []});
     console.log(res);
 });

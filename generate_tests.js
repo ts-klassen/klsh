@@ -72,10 +72,10 @@ for (const file of defs) {
   content.push('');
   content.push(`describe('auto-generated ${testName}', function() {`);
   // Safely quote the test description using JSON.stringify to handle special characters
-  content.push(`  it(${JSON.stringify('bash: ' + command)}, function() {`);
+  content.push(`  it(${JSON.stringify('bash: ' + command)}, async function() {`);
   content.push(`    const stdin = ${JSON.stringify(stdin)};`);
   content.push(`    const args = ${JSON.stringify(parts.slice(1))};`);
-  content.push('    const result = klsh.' + name + '.main({ args, stdin, env: {} });');
+  content.push('    const result = await klsh.' + name + '.main({ args, stdin, env: {} });');
   content.push(`    expect(result.stdout).to.equal(${JSON.stringify(expStdout)});`);
   content.push(`    expect(result.stderr).to.equal(${JSON.stringify(expStderr)});`);
   content.push(`    expect(result.env['?']).to.equal(${expCode});`);

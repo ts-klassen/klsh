@@ -3,10 +3,10 @@ const { expect } = require('chai');
 const klsh = require('../../dist/klsh.js');
 
 describe('auto-generated cat_invalid_option', function() {
-  it("bash: cat --invalid", function() {
+  it("bash: cat --invalid", async function() {
     const stdin = "";
     const args = ["--invalid"];
-    const result = klsh.cat.main({ args, stdin, env: {} });
+    const result = await klsh.cat.main({ args, stdin, env: {} });
     expect(result.stdout).to.equal("");
     expect(result.stderr).to.equal("cat: unrecognized option '--invalid'\nTry 'cat --help' for more information.\n");
     expect(result.env['?']).to.equal(1);

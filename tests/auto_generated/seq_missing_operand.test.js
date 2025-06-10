@@ -3,10 +3,10 @@ const { expect } = require('chai');
 const klsh = require('../../dist/klsh.js');
 
 describe('auto-generated seq_missing_operand', function() {
-  it("bash: seq", function() {
+  it("bash: seq", async function() {
     const stdin = "";
     const args = [];
-    const result = klsh.seq.main({ args, stdin, env: {} });
+    const result = await klsh.seq.main({ args, stdin, env: {} });
     expect(result.stdout).to.equal("");
     expect(result.stderr).to.equal("seq: missing operand\nTry 'seq --help' for more information.\n");
     expect(result.env['?']).to.equal(1);

@@ -56,7 +56,7 @@ function _interpretEscapes(s) {
   return { str: out, suppressed };
 }
 
-function main({ args = [], stdin = '', env = {} }) {
+async function main({ args = [], stdin = '', env = {} }) {
   const eHelp = `enable interpretation of backslash escapes
   \\\\      backslash
   \\a      alert (BEL)
