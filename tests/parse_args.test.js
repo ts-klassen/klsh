@@ -40,6 +40,15 @@ describe('parse_args', function() {
     const result = klsh.parse_args.parse(['-abc', 'world'], option_spec);
     expect(result).to.deep.equal({options: {a_flag: true, b_flag: true, c_flag: true}, operands: ['world'], unknown: []});
   });
+  it('parse bundled flags with attached string option', function() {
+    const option_spec = [
+      { key: 'a_flag', short_tag: 'a', long_tag: 'alpha', spec: 'flag', help: '' },
+      { key: 'b_flag', short_tag: 'b', long_tag: 'beta', spec: 'flag', help: '' },
+      { key: 'c_str', short_tag: 'c', long_tag: 'charlie', spec: 'string', help: '' }
+    ];
+    const result = klsh.parse_args.parse(['-abc4'], option_spec);
+    expect(result).to.deep.equal({options: {a_flag: true, b_flag: true, c_str: '4'}, operands: [], unknown: []});
+  });
   it('parse string options', function() {
     const option_spec = [
         {

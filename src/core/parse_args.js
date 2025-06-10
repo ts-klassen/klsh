@@ -58,46 +58,43 @@ function parse(args, optionSpec) {
         }
       }
     } else if (token.startsWith('-') && token.length > 1) {
-      // handle short option with attached string value, e.g., -n1 or -c64
-      if (token.length > 2) {
-        const name = token[1];
-        const specStr = optionSpec.find(o => o.short_tag === name && o.spec === 'string');
-        if (specStr) {
-          options[specStr.key] = token.slice(2);
-          i++;
+      // handle clustered short options and string options
+      let j = 1;
+      let consumed = false;
+      while (j < token.length) {
+        const ch = token[j];
+        const spec = optionSpec.find(o => o.short_tag === ch);
+        if (!spec) {
+          // unknown option
+          unknown.push(token);
+          consumed = true;
+          break;
+        }
+        if (spec.spec === 'flag') {
+          options[spec.key] = true;
+          j++;
           continue;
         }
-      }
-      if (token.length === 2) {
-        const name = token[1];
-        const spec = optionSpec.find(o => o.short_tag === name);
-        if (spec) {
-          if (spec.spec === 'flag') {
-            options[spec.key] = true;
-            i++;
-          } else if (spec.spec === 'string') {
-            if (i + 1 < args.length) {
-              options[spec.key] = args[i + 1];
-              i += 2;
-            } else {
-              options[spec.key] = undefined;
-              i++;
-            }
-          } else i++;
-        } else {
-          unknown.push(token);
+        // string option: take rest of token or next arg
+        const rest = token.slice(j + 1);
+        if (rest.length > 0) {
+          options[spec.key] = rest;
+        } else if (i + 1 < args.length) {
+          options[spec.key] = args[i + 1];
           i++;
+        } else {
+          options[spec.key] = undefined;
         }
-      } else {
-        const chars = token.slice(1).split('');
-        const allFlags = chars.every(ch => optionSpec.some(o => o.short_tag === ch && o.spec === 'flag'));
-        if (allFlags) {
-          chars.forEach(ch => {
-            const spec = optionSpec.find(o => o.short_tag === ch && o.spec === 'flag');
-            options[spec.key] = true;
-          });
-        } else unknown.push(token);
+        consumed = true;
+        break;
+      }
+      if (!consumed && j === token.length) {
+        // all flags consumed
+        consumed = true;
+      }
+      if (consumed) {
         i++;
+        continue;
       }
     } else {
       operands.push(token);
