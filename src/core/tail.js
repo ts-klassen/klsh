@@ -15,6 +15,22 @@ async function main({ args = [], stdin = '', env = {} }) {
     const msg = `tail: unrecognized option '${opt}'\nTry 'tail --help' for more information.\n`;
     return { stdout: '', stderr: msg, env: Object.assign({}, env, { '?': 1 }) };
   }
+
+  // Handle missing arguments for string options (value === undefined)
+  function argMissing(flag) {
+    return {
+      stdout: '',
+      stderr: `tail: option '${flag}' requires an argument\nTry 'tail --help' for more information.\n`,
+      env: Object.assign({}, env, { '?': 1 })
+    };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(options, 'bytes') && options.bytes === undefined) {
+    return argMissing('--bytes');
+  }
+  if (Object.prototype.hasOwnProperty.call(options, 'lines') && options.lines === undefined) {
+    return argMissing('--lines');
+  }
   // determine mode and count
   let mode = 'lines';
   let countValue;
@@ -55,9 +71,11 @@ async function main({ args = [], stdin = '', env = {} }) {
     if (raw === undefined || sign === null) {
       selected = num >= lines.length ? lines : lines.slice(-num);
     } else if (sign === '+') {
+      // start with line NUM (1-based)
       selected = num > 0 ? lines.slice(num - 1) : lines;
     } else if (sign === '-') {
-      selected = num < lines.length ? lines.slice(num) : [];
+      // last NUM lines
+      selected = num >= lines.length ? lines : lines.slice(-num);
     }
     if (selected.length > 0) stdout = selected.join('\n') + '\n';
   } else {
@@ -65,12 +83,16 @@ async function main({ args = [], stdin = '', env = {} }) {
     const sign = raw && (raw[0] === '+' || raw[0] === '-') ? raw[0] : null;
     const num = raw !== undefined ? parseInt(raw.replace(/^[+-]/, ''), 10) : 0;
     if (raw === undefined || sign === null) {
+      // default: last NUM bytes (NUM default 0 -> nothing)
       const n = num;
       stdout = n >= input.length ? input : input.slice(input.length - n);
     } else if (sign === '+') {
+      // start at byte NUM (1-based)
       stdout = input.slice(num - 1);
     } else if (sign === '-') {
-      stdout = input.slice(num);
+      // last NUM bytes (same as default)
+      const n = num;
+      stdout = n >= input.length ? input : input.slice(input.length - n);
     }
   }
   return { stdout, stderr: '', env: Object.assign({}, env, { '?': 0 }) };

@@ -15,6 +15,25 @@ async function main({ args = [], stdin = '', env = {} }) {
     const msg = `head: unrecognized option '${opt}'\nTry 'head --help' for more information.\n`;
     return { stdout: '', stderr: msg, env: Object.assign({}, env, { '?': 1 }) };
   }
+
+  // Detect missing argument for string options (the parser sets the key with
+  // value `undefined` when the option token is present but no argument was
+  // supplied).  GNU coreutils prints an explicit error and exits with code 1
+  // in that situation – replicate that here.
+  function argMissing(flag) {
+    return {
+      stdout: '',
+      stderr: `head: option '${flag}' requires an argument\nTry 'head --help' for more information.\n`,
+      env: Object.assign({}, env, { '?': 1 })
+    };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(options, 'bytes') && options.bytes === undefined) {
+    return argMissing('--bytes');
+  }
+  if (Object.prototype.hasOwnProperty.call(options, 'lines') && options.lines === undefined) {
+    return argMissing('--lines');
+  }
   // determine mode and count
   let mode = 'lines';
   let countValue;
@@ -53,12 +72,16 @@ async function main({ args = [], stdin = '', env = {} }) {
     if (input.endsWith('\n')) lines.pop();
     let selected;
     if (raw === undefined) {
+      // default – first 10 lines
       selected = lines.slice(0, 10);
     } else if (sign === '+') {
-      selected = lines.slice(num - 1);
+      // first NUM lines (tests expect this behaviour)
+      selected = lines.slice(0, num);
     } else if (sign === '-') {
+      // all but the last NUM lines
       selected = lines.slice(0, Math.max(0, lines.length - num));
     } else {
+      // first NUM lines
       selected = lines.slice(0, num);
     }
     if (selected.length > 0) stdout = selected.join('\n') + '\n';
@@ -69,10 +92,13 @@ async function main({ args = [], stdin = '', env = {} }) {
     if (raw === undefined) {
       stdout = '';
     } else if (sign === '+') {
-      stdout = input.slice(num - 1);
+      // first NUM bytes
+      stdout = input.slice(0, num);
     } else if (sign === '-') {
+      // all but the last NUM bytes
       stdout = input.slice(0, Math.max(0, input.length - num));
     } else {
+      // first NUM bytes
       stdout = input.slice(0, num);
     }
   }
