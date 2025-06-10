@@ -1,5 +1,5 @@
-// 'cat' command: output stdin with GNU-like options
-function main({ args = [], stdin = '', env = {} }) {
+// 'cat' command: output file(s) or stdin with GNU-like options
+async function main({ args = [], stdin = '', env = {} }) {
   // parse supported options
   const optionSpec = [
     { key: 'number', short_tag: 'n', long_tag: 'number', spec: 'flag', help: 'number all output lines' },
@@ -12,7 +12,7 @@ function main({ args = [], stdin = '', env = {} }) {
     { key: 'opt_e', short_tag: 'e', long_tag: '', spec: 'flag', help: 'equivalent to -vE' },
     { key: 'opt_t', short_tag: 't', long_tag: '', spec: 'flag', help: 'equivalent to -vT' }
   ];
-  const { options, unknown } = klsh.parse_args.parse(args, optionSpec);
+  const { options, operands, unknown } = klsh.parse_args.parse(args, optionSpec);
   // handle unrecognized options
   if (unknown && unknown.length > 0) {
     const opt = unknown[0];
@@ -27,6 +27,23 @@ function main({ args = [], stdin = '', env = {} }) {
     }
     return { stdout: '', stderr: msg, env: Object.assign({}, env, { '?': 1 }) };
   }
+  // read from files if given, otherwise use stdin
+  let input = '';
+  if (operands && operands.length > 0) {
+    for (const file of operands) {
+      try {
+        const data = await klsh.fs.readFile(file);
+        input += data;
+      } catch (err) {
+        const msg = err.code === 'ENOENT'
+          ? `cat: ${file}: No such file or directory\n`
+          : `cat: ${file}: ${err.message}\n`;
+        return { stdout: '', stderr: msg, env: Object.assign({}, env, {'?': 1}) };
+      }
+    }
+  } else {
+    input = stdin;
+  }
   // derive flags, with -b overriding -n
   let numberAll = options.number === true;
   const numberNonblank = options.number_nonblank === true;
@@ -39,7 +56,7 @@ function main({ args = [], stdin = '', env = {} }) {
   if (options.opt_t === true) { showNonprinting = true; showTabs = true; }
   if (options.show_all === true) { showNonprinting = true; showEnds = true; showTabs = true; }
   // split input into segments including line endings
-  const segments = stdin === '' ? [] : stdin.match(/[^\n]*\n|[^\n]+$/g) || [];
+  const segments = input === '' ? [] : input.match(/[^\n]*\n|[^\n]+$/g) || [];
   // process blank squeezing
   const processed = [];
   let prevBlank = false;
