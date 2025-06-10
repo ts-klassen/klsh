@@ -89,18 +89,22 @@ async function main({ args = [], stdin = '', env = {} }) {
     const raw = countValue;
     const sign = raw && (raw[0] === '+' || raw[0] === '-') ? raw[0] : null;
     const num = raw !== undefined ? parseInt(raw.replace(/^[+-]/, ''), 10) : 0;
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    const bytes = encoder.encode(input);
+
+    let sliced;
     if (raw === undefined) {
-      stdout = '';
+      sliced = new Uint8Array();
     } else if (sign === '+') {
-      // first NUM bytes
-      stdout = input.slice(0, num);
+      sliced = bytes.slice(0, num);
     } else if (sign === '-') {
-      // all but the last NUM bytes
-      stdout = input.slice(0, Math.max(0, input.length - num));
+      sliced = bytes.slice(0, Math.max(0, bytes.length - num));
     } else {
-      // first NUM bytes
-      stdout = input.slice(0, num);
+      sliced = bytes.slice(0, num);
     }
+    stdout = decoder.decode(sliced);
   }
   return { stdout, stderr: '', env: Object.assign({}, env, { '?': 0 }) };
 }

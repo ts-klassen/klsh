@@ -82,18 +82,21 @@ async function main({ args = [], stdin = '', env = {} }) {
     const raw = countValue;
     const sign = raw && (raw[0] === '+' || raw[0] === '-') ? raw[0] : null;
     const num = raw !== undefined ? parseInt(raw.replace(/^[+-]/, ''), 10) : 0;
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    const bytes = encoder.encode(input);
+    let sliced;
     if (raw === undefined || sign === null) {
-      // default: last NUM bytes (NUM default 0 -> nothing)
       const n = num;
-      stdout = n >= input.length ? input : input.slice(input.length - n);
+      sliced = n >= bytes.length ? bytes : bytes.slice(bytes.length - n);
     } else if (sign === '+') {
-      // start at byte NUM (1-based)
-      stdout = input.slice(num - 1);
+      sliced = bytes.slice(num - 1);
     } else if (sign === '-') {
-      // last NUM bytes (same as default)
       const n = num;
-      stdout = n >= input.length ? input : input.slice(input.length - n);
+      sliced = n >= bytes.length ? bytes : bytes.slice(bytes.length - n);
     }
+    stdout = decoder.decode(sliced);
   }
   return { stdout, stderr: '', env: Object.assign({}, env, { '?': 0 }) };
 }
