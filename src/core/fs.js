@@ -6,36 +6,22 @@ if (typeof indexedDB === 'undefined' && typeof require === 'function') {
 const DB_NAME = 'klsh_files';
 const STORE_NAME = 'files';
 
-// Maintain a cached connection.  Tests running under Node frequently call
-// `db.close()` when resetting state; re-use only connections that are still
-// open.
-let cachedDB = null;
-
+let dbPromise = null;
 function getDB() {
-  return new Promise((resolve, reject) => {
-    // Attempt to reuse cached connection if it is still valid.
-    if (cachedDB) {
-      try {
-        cachedDB.transaction(STORE_NAME, 'readonly');
-        return resolve(cachedDB);
-      } catch (err) {
-        /* fall through – DB was closed */
-      }
-    }
-
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = event => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME);
-      }
-    };
-    req.onsuccess = event => {
-      cachedDB = event.target.result;
-      resolve(cachedDB);
-    };
-    req.onerror = () => reject(req.error);
-  });
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = event => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+      req.onsuccess = event => resolve(event.target.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  return dbPromise;
 }
 
 // Read a file's contents; rejects with Error('ENOENT') if not found
