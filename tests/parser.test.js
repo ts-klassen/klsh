@@ -259,4 +259,79 @@ describe('parser', function() {
     ]);
   });
 
+  // -----------------------------------------------------------------------
+  // Tests for variable expansion nodes (type: 'expansion') within commands
+  // -----------------------------------------------------------------------
+
+  it('parse parameter containing variable expansion', function() {
+    const result = klsh.parser.klsh('echo $USER');
+    expect(result).to.deep.equal([
+      {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+          [{"type": "expansion", "value": "USER"}]
+        ]
+      }
+    ]);
+  });
+
+  it('parse double-quoted string with expansion', function() {
+    const result = klsh.parser.klsh('echo "Hello, ${USER}!"');
+    expect(result).to.deep.equal([
+      {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+          [
+            {"type": "text", "value": "Hello, "},
+            {"type": "expansion", "value": "USER"},
+            {"type": "text", "value": "!"}
+          ]
+        ]
+      }
+    ]);
+  });
+
+  // -----------------------------------------------------------------------
+  // Tests for command substitution nodes within parsed commands
+  // -----------------------------------------------------------------------
+
+  it('parse parameter containing command substitution', function() {
+    const result = klsh.parser.klsh('echo $(pwd)');
+    expect(result).to.deep.equal([
+      {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+          [{
+            "type": "substitution",
+            "value": [{
+              "component": [{"type": "text", "value": "pwd"}],
+              "params": []
+            }]
+          }]
+        ]
+      }
+    ]);
+  });
+
+  it('parse double-quoted argument with substitution', function() {
+    const result = klsh.parser.klsh('echo "Dir: $(pwd)"');
+    expect(result).to.deep.equal([
+      {
+        "component": [{"type": "text", "value": "echo"}],
+        "params": [
+          [
+            {"type": "text", "value": "Dir: "},
+            {
+              "type": "substitution",
+              "value": [{
+                "component": [{"type": "text", "value": "pwd"}],
+                "params": []
+              }]
+            }
+          ]
+        ]
+      }
+    ]);
+  });
+
 });

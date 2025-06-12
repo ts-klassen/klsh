@@ -25,4 +25,57 @@ describe('parser.klsh_literal', function() {
       { type: 'text', value: 'Hello, world' }
     ]);
   });
+
+  // New tests for variable expansion patterns ($VAR and ${VAR})
+
+  it('simple variable expansion', function() {
+    const input = '$USER';
+    const result = klsh.parser.klsh_literal(input);
+    expect(result).to.deep.equal([
+      { type: 'expansion', value: 'USER' }
+    ]);
+  });
+
+  it('variable expansion inside double quotes', function() {
+    const input = '"Hello, ${USER}!"';
+    const result = klsh.parser.klsh_literal(input);
+    expect(result).to.deep.equal([
+      { type: 'text', value: 'Hello, ' },
+      { type: 'expansion', value: 'USER' },
+      { type: 'text', value: '!' }
+    ]);
+  });
+
+  // ------------------------------------------------------------------
+  // Substitution tests: $(command)
+  // ------------------------------------------------------------------
+
+  it('simple command substitution', function() {
+    const input = '$(pwd)';
+    const result = klsh.parser.klsh_literal(input);
+    expect(result).to.deep.equal([
+      {
+        type: 'substitution',
+        value: [{
+          component: [{ type: 'text', value: 'pwd' }],
+          params: []
+        }]
+      }
+    ]);
+  });
+
+  it('command substitution inside double quotes', function() {
+    const input = '"Current: $(pwd)"';
+    const result = klsh.parser.klsh_literal(input);
+    expect(result).to.deep.equal([
+      { type: 'text', value: 'Current: ' },
+      {
+        type: 'substitution',
+        value: [{
+          component: [{ type: 'text', value: 'pwd' }],
+          params: []
+        }]
+      }
+    ]);
+  });
 });
