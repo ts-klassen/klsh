@@ -29,17 +29,29 @@ async function main({ args = [], stdin = '', env = {} }) {
     return { stdout: '', stderr: msg, env: Object.assign({}, env, { '?': 1 }) };
   }
   // read from files if given, otherwise use stdin
+  // Aggregate content from each operand while collecting any errors.  GNU `cat`
+  // prints the contents of every readable file in the order provided, but does
+  // *not* abort on the first unreadable file.  Instead it prints an error
+  // message to stderr, continues with the remaining operands and finally exits
+  // with a non-zero status when at least one error occurred.  This behaviour
+  // is required by the swap_stdout_stderr auto-generated test which expects
+  // the output from an existing file to be produced even when a subsequent
+  // file is missing.
+
   let input = '';
+  let errBuf = '';
+  let hadError = false;
+
   if (operands && operands.length > 0) {
     for (const file of operands) {
       try {
         const data = await klsh.fs.readFile(file);
         input += data;
       } catch (err) {
-        const msg = err.code === 'ENOENT'
+        hadError = true;
+        errBuf += (err.code === 'ENOENT')
           ? `cat: ${file}: No such file or directory\n`
           : `cat: ${file}: ${err.message}\n`;
-        return { stdout: '', stderr: msg, env: Object.assign({}, env, {'?': 1}) };
       }
     }
   } else {
@@ -102,7 +114,11 @@ async function main({ args = [], stdin = '', env = {} }) {
     }
     out.push(prefix + s + (hasLf ? '\n' : ''));
   }
-  return { stdout: out.join(''), stderr: '', env: Object.assign({}, env, { '?': 0 }) };
+  return {
+    stdout: out.join(''),
+    stderr: errBuf,
+    env: Object.assign({}, env, { '?': hadError ? 1 : 0 })
+  };
 }
 
 module.exports = { main };
