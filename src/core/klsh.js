@@ -27,8 +27,15 @@ async function execute_cmd(cmd, input, env) {
   // -------------------------------------------------------------
   let stdinData = input;
   let stdinPath = null;          // Path for any `<` redirection (only last one counts)
-  // Collect only the *last* output redirection for each file descriptor, as per POSIX.
-  const lastOutputRedir = {};    // fd -> redirection object
+  // Separate redirections so we can handle them later:
+  //   * lastOutputRedir keeps only the *last* pathname redirection for any given
+  //     descriptor ("> file" or ">> file") because earlier ones are overridden.
+  //   * dupRedirs preserves the **ordered** list of descriptor-duplication
+  //     operators (n>&m).  Order matters here because each duplication operates
+  //     on the descriptor state produced by all preceding redirections, so we
+  //     must replay them sequentially after the command has emitted its data.
+  const lastOutputRedir = {};    // fd -> redirection object (to file path)
+  const dupRedirs = [];          // [{fd, targetFd}] in command-line order
 
   function _norm(p) {
     return typeof p === 'string' ? p.replace(/;+$/, '') : p;
@@ -68,10 +75,28 @@ async function execute_cmd(cmd, input, env) {
 
       // Track only the last output redirection per fd, resolving its path
       if (rd.type === 'overwrite' || rd.type === 'append') {
-        const strObj = await literal_to_string(rd.value, env);
-        stderr += strObj.stderr;
-        const path = _norm(strObj.text);
-        lastOutputRedir[rd.fd] = { fd: rd.fd, type: rd.type, path };
+        // `rd.value` is usually an array of literal nodes, but for file
+        // descriptor duplications produced by the grammar helper `mkDup`
+        // it is already a plain string such as "&1".  Avoid the relatively
+        // expensive literal_to_string conversion in that case as it would
+        // yield an empty result (characters are not AST nodes).
+        let dest;
+        if (typeof rd.value === 'string') {
+          dest = _norm(rd.value);
+        } else {
+          const strObj = await literal_to_string(rd.value, env);
+          stderr += strObj.stderr;
+          dest = _norm(strObj.text);
+        }
+
+        if (dest.startsWith('&')) {
+          // Handle descriptor duplication/redirect (n>&m)
+          const targetFd = dest.slice(1);
+          dupRedirs.push({ fd: rd.fd, targetFd });
+        } else {
+          // Ordinary file redirection: keep only the last one per fd.
+          lastOutputRedir[rd.fd] = { fd: rd.fd, type: rd.type, path: dest };
+        }
       }
     }
   }
@@ -137,11 +162,58 @@ async function execute_cmd(cmd, input, env) {
         if (rd.fd === '2') redirectFd2 = true;
       }
 
-      // Suppress streams only after all redirections have been handled
+      // Suppress streams only after all file redirections have been handled
       if (redirectFd1) stdoutData = '';
       if (redirectFd2) stderrData = '';
 
-      return { stdout: stdoutData, stderr: stderrData, env: clone(res.env) };
+      // ------------------------------------------------------------------
+      // Apply descriptor duplications (n>&m) recorded earlier.  We replay
+      // them **after** the command has executed and after file redirections
+      // have been processed so that we only have to shuffle in-memory strings
+      // rather than actual file handles.
+      // ------------------------------------------------------------------
+      // Build a lookup that tells, for each descriptor, which logical stream
+      // ("stdout" or "stderr") it finally points to.
+      const dest = { '1': 'stdout', '2': 'stderr' };
+
+      for (const dup of dupRedirs) {
+        const src = dup.targetFd;
+        // Determine the source destination at this moment – defaulting to
+        // the canonical streams for 1 and 2 if we have not tracked them yet.
+        if (!(src in dest)) {
+          // For descriptors we have no information about we conservatively
+          // assume they still point at their original destinations.
+          dest[src] = src === '2' ? 'stderr' : 'stdout';
+        }
+        dest[dup.fd] = dest[src];
+      }
+
+      // Compute final observable stdout / stderr strings based on the mapping.
+      let finalStdout = '';
+      let finalStderr = '';
+
+      const mapOut = dest['1'];
+      const mapErr = dest['2'];
+
+      if (mapOut === 'stdout') finalStdout += stdoutData;
+      else if (mapOut === 'stderr') finalStdout += stderrData;
+
+      if (mapErr === 'stdout') finalStderr += stdoutData;
+      else if (mapErr === 'stderr') finalStderr += stderrData;
+
+      // Handle the case where both 1 and 2 point to the same destination:
+      if (mapOut === mapErr) {
+        // If both to stdout → merge outputs there and clear stderr
+        if (mapOut === 'stdout') {
+          finalStdout = stdoutData + stderrData;
+          finalStderr = '';
+        } else if (mapOut === 'stderr') {
+          finalStderr = stdoutData + stderrData;
+          finalStdout = '';
+        }
+      }
+
+      return { stdout: finalStdout, stderr: finalStderr, env: clone(res.env) };
     } catch (err) {
       stderr += (err.message || 'Error') + '\n';
       if ('KLSH_VERBOSE_ERROR' in env) {
