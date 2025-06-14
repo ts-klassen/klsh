@@ -1,0 +1,3 @@
+klsh
+echo data > /tmp/swap_stdout_stderr.txt
+cat /tmp/swap_stdout_stderr.txt /tmp/swap_stdout_stderr_non_existing.txt 3>&1 4>&2 5>&3 6>&4 1>&6 2>&5
