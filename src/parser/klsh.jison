@@ -4,12 +4,38 @@
 [0-9]*\>\&[0-9]+                        return 'RD_DUP';
 [0-9]*\>\>                              return 'RD_APPEND';
 [0-9]*\<\<\<                            return 'RD_HERESTR';
-[0-9]*\<\<[ \t]*[^\s]+                 {
-    // here-document (<<) with delimiter right after operator
-    var m = this.match.match(/^([0-9]*)<<\s*([^\s]+)/);
-    var fdPart = m[1];
-    var delim = m[2];
+[0-9]*\<\<                  {
+    // here-document (<<) — we now lex only the operator, then manually
+    // read the delimiter token which follows it.
+
+    // Extract optional FD from the matched text (everything before the <<)
+    var m = this.match.match(/^([0-9]*)<<$/);
+    var fdPart = (m && m[1]) ? m[1] : '';
     var fd = fdPart.length ? fdPart : '0';
+
+    // ---------------------------------------------
+    // Manually consume optional spaces / tabs after <<
+    while (this._input.length && (this._input[0] === ' ' || this._input[0] === '\t')) {
+        this.input();
+    }
+
+    // Now read the delimiter token: one or more non-whitespace characters
+    var delim = '';
+    while (this._input.length) {
+        var ch = this.input();
+        if (ch === '\n' || ch === ' ' || ch === '\t') {
+            // reached end of delimiter.  Push newline back so that the lexer
+            // still sees it as the command-terminating EOL token.
+            if (ch === '\n') this.unput(ch);
+            break;
+        }
+        delim += ch;
+    }
+
+    if (!delim.length) {
+        // malformed heredoc, fall back to a simple LITERAL token
+        return 'LITERAL';
+    }
 
     // ------------------------------------------------------------------
     // Share the first here-document body amongst any subsequent heredoc
@@ -70,14 +96,14 @@
     //-------------------------------------------------------------------
 
     // Step 1: consume characters after the delimiter up to the newline
-    // Capture, *without consuming*, everything up to (but not including) the
-    // end-of-line which terminates the current command.  These characters
-    // must remain in the input stream so that they can be tokenised after
-    // the heredoc token has been handled.
+    // Capture, without consuming, any extra characters on the current line
+    // *after* the delimiter token (e.g. redirections or another heredoc).
     var restLine = '';
-    for (var i = 0; i < this._input.length && this._input[i] !== '\n'; i++) {
-        restLine += this._input[i];
+    while (this._input.length && this._input[0] !== '\n') {
+        restLine += this.input(); // consume char
     }
+    // later we will push it back to preserve order
+    if (restLine.length) this.unput(restLine);
 
     // Step 2 & 3:  Rather than consuming characters one-by-one (which would
     // disturb the input stream needed for the remainder of the command
