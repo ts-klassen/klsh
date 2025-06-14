@@ -27,14 +27,10 @@ function double_quote(text) {
     ]);
 }
 
-function nodesToString(nodes) {
-    return nodes.map(function(n) { return n.value; }).join('');
-}
-
 function mkRedirect(token, nodes, kind) {
     var m = token.match(/^([0-9]*)(?:>>?|<)$/);
     var fd = (m && m[1]) ? m[1] : (kind === 'input' ? '0' : '1');
-    return { type: kind, fd: fd, value: nodesToString(nodes) };
+    return { type: kind, fd: fd, value: nodes };
 }
 
 function mkDup(token) {
@@ -54,4 +50,4 @@ function replace(str, replacements) {
     return result;
 }
 
-module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup, nodesToString };
+module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup };

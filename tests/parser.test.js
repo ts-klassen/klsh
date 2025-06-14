@@ -431,12 +431,12 @@ describe('parser', function() {
           [{ "type": "text", "value": "hello" }]
         ],
         "redirect": [
-          { "type": "overwrite", "fd": "1", "value": "overwrite.txt" },
-          { "type": "append",    "fd": "1", "value": "append.txt" },
-          { "type": "input",     "fd": "0", "value": "input.txt" },
-          { "type": "heredoc",   "fd": "0", "value": "test1" },
-          { "type": "heredoc",   "fd": "0", "value": "test 2" },
-          { "type": "heredoc",   "fd": "0", "value": "test 3" }
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "overwrite.txt"}] },
+          { "type": "append",    "fd": "1", "value": [{"type": "text", "value": "append.txt"}] },
+          { "type": "input",     "fd": "0", "value": [{"type": "text", "value": "input.txt"}] },
+          { "type": "heredoc",   "fd": "0", "value": [{"type": "text", "value": "test1"}] },
+          { "type": "heredoc",   "fd": "0", "value": [{"type": "text", "value": "test 2"}] },
+          { "type": "heredoc",   "fd": "0", "value": [{"type": "text", "value": "test 3"}] }
         ]
       }
     ]);
@@ -454,10 +454,10 @@ describe('parser', function() {
           [{ "type": "text", "value": "test" }]
         ],
         "redirect": [
-          { "type": "overwrite", "fd": "2", "value": "err.txt" },
-          { "type": "append",    "fd": "3", "value": "append.txt" },
-          { "type": "input",     "fd": "4", "value": "input.txt" },
-          { "type": "heredoc",   "fd": "5", "value": "X" }
+          { "type": "overwrite", "fd": "2", "value": [{"type": "text", "value": "err.txt"}] },
+          { "type": "append",    "fd": "3", "value": [{"type": "text", "value": "append.txt"}] },
+          { "type": "input",     "fd": "4", "value": [{"type": "text", "value": "input.txt"}] },
+          { "type": "heredoc",   "fd": "5", "value": [{"type": "text", "value": "X"}] }
         ]
       }
     ]);

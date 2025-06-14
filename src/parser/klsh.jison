@@ -74,7 +74,7 @@ redirect
         {
             var fdMatch = $1.match(/^([0-9]*)/);
             var fd = (fdMatch && fdMatch[1].length) ? fdMatch[1] : '0';
-            $$ = { type: 'heredoc', fd: fd, value: klsh.parser.nodesToString($2) };
+            $$ = { type: 'heredoc', fd: fd, value: $2 };
         }
     | RD_DUP
         { $$ = klsh.parser.mkDup($1); }
