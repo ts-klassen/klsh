@@ -334,4 +334,47 @@ describe('parser', function() {
     ]);
   });
 
+  // -----------------------------------------------------------------------
+  // New tests for backtick command substitution and substitutions with
+  // arguments, added for the extended lexer patterns.
+  // -----------------------------------------------------------------------
+
+  it('parse parameter containing backtick substitution', function() {
+    const result = klsh.parser.klsh('echo `pwd`');
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "echo" }],
+        "params": [
+          [{
+            "type": "substitution",
+            "value": [{
+              "component": [{ "type": "text", "value": "pwd" }],
+              "params": []
+            }]
+          }]
+        ]
+      }
+    ]);
+  });
+
+  it('parse parameter containing substitution with arguments', function() {
+    const result = klsh.parser.klsh('echo $(pwd -P)');
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "echo" }],
+        "params": [
+          [{
+            "type": "substitution",
+            "value": [{
+              "component": [{ "type": "text", "value": "pwd" }],
+              "params": [
+                [{ "type": "text", "value": "-P" }]
+              ]
+            }]
+          }]
+        ]
+      }
+    ]);
+  });
+
 });
