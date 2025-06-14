@@ -441,7 +441,7 @@ describe('parser', function() {
     ]);
   });
 
-  it('multy-line heredoc parse redirection operators', function() {
+  it('multi-line heredoc parse redirection operators', function() {
     const script = `echo hello > overwrite.txt >> append.txt < input.txt << EOF\nLine 1\nLine 2\nEOF`;
 
     const result = klsh.parser.klsh(script);
@@ -462,7 +462,7 @@ describe('parser', function() {
     ]);
   });
 
-  it('multy multy-line heredoc parse redirection operators', function() {
+  it('multi multi-line heredoc parse redirection operators', function() {
     const script = `cat << EOF1 > a1; cat << EOF2 > a2\nhello a1\nnext line a1\nEOF1\nhello a2\nnext line a2\nEOF2`;
 
     const result = klsh.parser.klsh(script);
@@ -487,7 +487,7 @@ describe('parser', function() {
     ]);
   });
 
-  it('pipe multy-line heredoc parse redirection operators', function() {
+  it('pipe multi-line heredoc parse redirection operators', function() {
     const script = `cat << EOF1 > a1 | cat << EOF2 > a2\nhello a1\nnext line a1\nEOF1\nhello a2\nnext line a2\nEOF2`;
 
     const result = klsh.parser.klsh(script);
