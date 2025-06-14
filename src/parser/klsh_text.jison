@@ -1,15 +1,15 @@
 %lex
 %%
-<<EOF>>                 return 'EOF';
-\$%\$                   {yytext = '$'; return 'TEXT'};
-\$%\`                   {yytext = '`'; return 'TEXT'};
-\$[a-zA-Z0-9_-]+        {yytext = yytext.slice(1); return 'EXPANSION'};
-\$\{[a-zA-Z0-9_-]+\}    {yytext = yytext.slice(2, -1); return 'EXPANSION'};
-\$\(([^\)\\]|\\.)*\)    {yytext = yytext.slice(2, -1); return 'SUBSTITUTION'};
-\`([^\`\\]|\\.)*\`      {yytext = yytext.slice(1, -1); return 'SUBSTITUTION'};
-[^$`]+                  return 'TEXT';
-\$.                     {yytext = yytext[1]; return 'EXPANSION'};
-\$                      return 'TEXT';
+<<EOF>>                       return 'EOF';
+\$%\$                         {yytext = '$'; return 'TEXT'};
+\$%\`                         {yytext = '`'; return 'TEXT'};
+\$[a-zA-Z_][a-zA-Z0-9_]*      {yytext = yytext.slice(1); return 'EXPANSION'};
+\$\{[a-zA-Z_][a-zA-Z0-9_]*\}  {yytext = yytext.slice(2, -1); return 'EXPANSION'};
+\$\(([^\)\\]|\\.)*\)          {yytext = yytext.slice(2, -1); return 'SUBSTITUTION'};
+\`([^\`\\]|\\.)*\`            {yytext = yytext.slice(1, -1); return 'SUBSTITUTION'};
+[^$`]+                        return 'TEXT';
+\$.                           {yytext = yytext[1]; return 'EXPANSION'};
+\$                            return 'TEXT';
 /lex
 
 %start input
