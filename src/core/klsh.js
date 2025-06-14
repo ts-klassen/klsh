@@ -57,9 +57,12 @@ async function execute_cmd(cmd, input, env) {
         }
       }
 
-      // Track only the last output redirection per fd
+      // Track only the last output redirection per fd, resolving its path
       if (rd.type === 'overwrite' || rd.type === 'append') {
-        lastOutputRedir[rd.fd] = rd;
+        const strObj = await literal_to_string(rd.value, env);
+        stderr += strObj.stderr;
+        const path = _norm(strObj.text);
+        lastOutputRedir[rd.fd] = { fd: rd.fd, type: rd.type, path };
       }
     }
   }
@@ -84,8 +87,7 @@ async function execute_cmd(cmd, input, env) {
       if (name === 'cat' && stdinPath) {
         for (const rd of outputRedirs) {
           if (rd.fd === '1') {
-            const strObj = await literal_to_string(rd.value, res.env);
-            if (_norm(strObj.text) === stdinPath) {
+            if (rd.path === stdinPath) {
               stderrData += 'cat: -: input file is output file\n';
               // Suppress stdout as it would have been redirected, but do not
               // perform the actual write to avoid corrupting the file.
@@ -105,9 +107,7 @@ async function execute_cmd(cmd, input, env) {
       let redirectFd2 = false;
 
       for (const rd of outputRedirs) {
-        const strObj = await literal_to_string(rd.value, res.env);
-        stderrData += strObj.stderr;
-        const path = _norm(strObj.text);
+        const path = rd.path;
         const content = rd.fd === '1' ? stdoutData : stderrData;
 
         try {
