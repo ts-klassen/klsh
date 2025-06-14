@@ -8,6 +8,7 @@
 \$\(([^\)\\]|\\.)*\)    {yytext = yytext.slice(2, -1); return 'SUBSTITUTION'};
 \`([^\`\\]|\\.)*\`      {yytext = yytext.slice(1, -1); return 'SUBSTITUTION'};
 [^$`]+                  return 'TEXT';
+\$.                     {yytext = yytext[1]; return 'EXPANSION'};
 \$                      return 'TEXT';
 /lex
 
