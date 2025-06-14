@@ -94,25 +94,6 @@ ${indentedContent}
 `;
 });
 
-// ------------------------------------------------------------------
-// Include post-build patches (src/patches/*.js).  These are executed after all
-// core commands and parsers have been attached, making them ideal for runtime
-// monkey-patches such as klsh_literal enhancement.
-// ------------------------------------------------------------------
-
-const patchesDir = path.join(__dirname, 'src', 'patches');
-if (fs.existsSync(patchesDir)) {
-  const patchFiles = fs.readdirSync(patchesDir).filter(f => f.endsWith('.js'));
-  patchFiles.forEach(file => {
-    const filePath = path.join(patchesDir, file);
-    const raw = fs.readFileSync(filePath, 'utf8');
-    // Remove CommonJS export line so code executes inside bundle scope
-    const content = raw.replace(/module\.exports\s*=\s*\{[^}]*\};?/g, '');
-    const indented = content.split('\n').map(l => '  ' + l).join('\n');
-    output += `  // patch: ${file}\n  (function() {\n${indented}\n  })();\n`;
-  });
-}
-
 output += `
   if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = klsh;
