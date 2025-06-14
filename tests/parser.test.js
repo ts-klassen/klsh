@@ -480,7 +480,7 @@ describe('parser', function() {
         "component": [{ "type": "text", "value": "cat" }],
         "params": [],
         "redirect": [
-          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a2\nnext line a2\n"}] },
           { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a2"}] },
         ]
       }
@@ -504,7 +504,7 @@ describe('parser', function() {
           "component": [{ "type": "text", "value": "cat" }],
           "params": [],
           "redirect": [
-            { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+            { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a2\nnext line a2\n"}] },
             { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a2"}] },
           ]
         }
