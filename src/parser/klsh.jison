@@ -3,6 +3,7 @@
 <<EOF>>                                 return 'EOF';
 [0-9]*\>\&[0-9]+                        return 'RD_DUP';
 [0-9]*\>\>                              return 'RD_APPEND';
+[0-9]*\<\<\<                            return 'RD_HERESTR';
 [0-9]*\>                                return 'RD_OVERWRITE';
 
 [0-9]*\<                                return 'RD_INPUT';
@@ -13,7 +14,7 @@
 /lex
 
 %start input
-%token LITERAL PIPE EOF EOL RD_APPEND RD_OVERWRITE RD_INPUT RD_DUP
+%token LITERAL PIPE EOF EOL RD_APPEND RD_OVERWRITE RD_INPUT RD_DUP RD_HERESTR
 
 %%
 
@@ -69,6 +70,12 @@ redirect
         { $$ = klsh.parser.mkRedirect($1, $2, 'overwrite'); }
     | RD_INPUT literal
         { $$ = klsh.parser.mkRedirect($1, $2, 'input'); }
+    | RD_HERESTR literal
+        {
+            var fdMatch = $1.match(/^([0-9]*)/);
+            var fd = (fdMatch && fdMatch[1].length) ? fdMatch[1] : '0';
+            $$ = { type: 'heredoc', fd: fd, value: klsh.parser.nodesToString($2) };
+        }
     | RD_DUP
         { $$ = klsh.parser.mkDup($1); }
     ;

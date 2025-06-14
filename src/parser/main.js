@@ -54,4 +54,4 @@ function replace(str, replacements) {
     return result;
 }
 
-module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup };
+module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup, nodesToString };
