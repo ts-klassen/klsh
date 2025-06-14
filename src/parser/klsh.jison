@@ -61,8 +61,31 @@
     if (lineEndIdx === -1) lineEndIdx = view.length;
 
     var bodyStart = lineEndIdx + 1;       // first char of body text
-    var delimSeq = '\n' + delim;         // delimiter must appear at BOL
-    var delimIdx = view.indexOf(delimSeq, bodyStart - 1);
+    // ------------------------------------------------------------------
+    // Search for a line which contains ONLY the delimiter token.  We scan
+    // for occurrences of "\n" + delim and then verify that the delimiter is
+    // followed immediately by a newline or the end-of-input.  This stricter
+    // check prevents false positives where the delimiter is merely a prefix
+    // of a longer word (e.g. "EOFx").
+    var delimSeq = '\n' + delim;
+    var delimIdx = -1;
+    var searchPos = bodyStart - 1; // include the leading \n in search
+
+    while (true) {
+        var candidate = view.indexOf(delimSeq, searchPos);
+        if (candidate === -1) break; // not found
+
+        var afterPos = candidate + delimSeq.length; // position after delim
+        if (afterPos === view.length || view[afterPos] === '\n') {
+            // Delimiter stands alone -> accept.
+            delimIdx = candidate;
+            break;
+        }
+
+        // Otherwise continue searching past this candidate.
+        searchPos = candidate + 1;
+    }
+
     if (delimIdx === -1) {
         // Unterminated heredoc – take remainder as body.
         delimIdx = view.length;
