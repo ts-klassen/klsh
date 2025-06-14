@@ -21,21 +21,23 @@ input
 
 parts
     : item
-        { $$ = [$1]; }
+        { $$ = $1; }
     | parts item
-        { $1.push($2); $$ = $1; }
+        { $$ = $1.concat($2); }
     ;
 
 item
     : TEXT
-        { $$ = { type: 'text', value: klsh.parser.no_quote($1) }; }
+        {
+            $$ = klsh.parser.klsh_text( klsh.parser.no_quote($1) );
+        }
     | SQUOTE
         {
-            $$ = { type: 'text', value: klsh.parser.single_quote($1) };
+            $$ = [{ type: 'text', value: klsh.parser.single_quote($1) }];
         }
     | DQUOTE
         {
-            $$ = { type: 'text', value: klsh.parser.double_quote($1) };
+            $$ = klsh.parser.klsh_text( klsh.parser.double_quote($1) );
         }
     ;
 
