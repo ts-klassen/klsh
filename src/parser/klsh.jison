@@ -52,7 +52,8 @@
         if (firstNL === -1) firstNL = view2.length;
 
         // Look for the delimiter at the start of a line:  "\n<delim>[\n|$]"
-        var pattern = new RegExp('\\n' + delim + '(?:\\n|$)');
+        function reEscape(s) { return s.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'); }
+        var pattern = new RegExp('\\n' + reEscape(delim) + '(?:\\n|$)');
         var match = pattern.exec(view2.slice(firstNL));
         if (match) {
             var startIdx = firstNL + match.index;   // position of leading newline before delim
