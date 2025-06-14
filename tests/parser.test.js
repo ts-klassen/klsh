@@ -377,48 +377,6 @@ describe('parser', function() {
     ]);
   });
 
-  it.skip('parse redirection operators', function() {
-    const script = `echo hello > overwrite.txt >> append.txt < input.txt << EOF\nLine 1\nLine 2\nEOF`;
-
-    const result = klsh.parser.klsh(script);
-
-    expect(result).to.deep.equal([
-      {
-        "component": [{ "type": "text", "value": "echo" }],
-        "params": [
-          [{ "type": "text", "value": "hello" }]
-        ],
-        "redirect": [
-          { "type": "overwrite", "fd": "1", "value": "overwrite.txt" },
-          { "type": "append",    "fd": "1", "value": "append.txt" },
-          { "type": "input",     "fd": "0", "value": "input.txt" },
-          { "type": "heredoc",   "fd": "0", "value": "Line 1\nLine 2\n" }
-        ]
-      }
-    ]);
-  });
-
-  it.skip('parse redirection operators with explicit file descriptors', function() {
-    const script = `echo test 2> err.txt 3>> append.txt 4< input.txt 5<< EOF\nX\nEOF`;
-
-    const result = klsh.parser.klsh(script);
-
-    expect(result).to.deep.equal([
-      {
-        "component": [{ "type": "text", "value": "echo" }],
-        "params": [
-          [{ "type": "text", "value": "test" }]
-        ],
-        "redirect": [
-          { "type": "overwrite", "fd": "2", "value": "err.txt" },
-          { "type": "append",    "fd": "3", "value": "append.txt" },
-          { "type": "input",     "fd": "4", "value": "input.txt" },
-          { "type": "heredoc",   "fd": "5", "value": "X\n" }
-        ]
-      }
-    ]);
-  });
-
   it('parse redirection operators <<<', function() {
     const script = `echo hello > overwrite.txt >> append.txt < input.txt <<< test1 <<< 'test 2' <<< "test 3"`;
 
@@ -479,6 +437,77 @@ describe('parser', function() {
           { "type": "overwrite", "fd": "1", "value": "&2" },
           { "type": "overwrite", "fd": "3", "value": "&1" }
         ]
+      }
+    ]);
+  });
+
+  it('multi-line heredoc parse redirection operators', function() {
+    const script = `echo hello > overwrite.txt >> append.txt < input.txt << EOF\nLine 1\nLine 2\nEOF`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "echo" }],
+        "params": [
+          [{ "type": "text", "value": "hello" }]
+        ],
+        "redirect": [
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "overwrite.txt"}] },
+          { "type": "append",    "fd": "1", "value": [{"type": "text", "value": "append.txt"}] },
+          { "type": "input",     "fd": "0", "value": [{"type": "text", "value": "input.txt"}] },
+          { "type": "heredoc",   "fd": "0", "value": [{"type": "text", "value": "Line 1\nLine 2\n"}] }
+        ]
+      }
+    ]);
+  });
+
+  it('multi multi-line heredoc parse redirection operators', function() {
+    const script = `cat << EOF1 > a1; cat << EOF2 > a2\nhello a1\nnext line a1\nEOF1\nhello a2\nnext line a2\nEOF2`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "cat" }],
+        "params": [],
+        "redirect": [
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a1"}] },
+        ]
+      },
+      {
+        "component": [{ "type": "text", "value": "cat" }],
+        "params": [],
+        "redirect": [
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a2\nnext line a2\n"}] },
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a2"}] },
+        ]
+      }
+    ]);
+  });
+
+  it('pipe multi-line heredoc parse redirection operators', function() {
+    const script = `cat << EOF1 > a1 | cat << EOF2 > a2\nhello a1\nnext line a1\nEOF1\nhello a2\nnext line a2\nEOF2`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "cat" }],
+        "params": [],
+        "redirect": [
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a1"}] },
+        ],
+        "pipe": {
+          "component": [{ "type": "text", "value": "cat" }],
+          "params": [],
+          "redirect": [
+            { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a2\nnext line a2\n"}] },
+            { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a2"}] },
+          ]
+        }
       }
     ]);
   });
