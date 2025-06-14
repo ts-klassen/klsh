@@ -419,8 +419,8 @@ describe('parser', function() {
     ]);
   });
 
-  it('parse redirection operators (no <<)', function() {
-    const script = `echo hello > overwrite.txt >> append.txt < input.txt`;
+  it('parse redirection operators <<<', function() {
+    const script = `echo hello > overwrite.txt >> append.txt < input.txt <<< test1 <<< 'test 2' <<< "test 3"`;
 
     const result = klsh.parser.klsh(script);
 
@@ -433,14 +433,17 @@ describe('parser', function() {
         "redirect": [
           { "type": "overwrite", "fd": "1", "value": "overwrite.txt" },
           { "type": "append",    "fd": "1", "value": "append.txt" },
-          { "type": "input",     "fd": "0", "value": "input.txt" }
+          { "type": "input",     "fd": "0", "value": "input.txt" },
+          { "type": "heredoc",   "fd": "0", "value": "test1" },
+          { "type": "heredoc",   "fd": "0", "value": "test 2" },
+          { "type": "heredoc",   "fd": "0", "value": "test 3" }
         ]
       }
     ]);
   });
 
-  it('parse redirection operators with explicit file descriptors (no <<)', function() {
-    const script = `echo test 2> err.txt 3>> append.txt 4< input.txt`;
+  it('parse redirection operators with explicit file descriptors <<<', function() {
+    const script = `echo test 2> err.txt 3>> append.txt 4< input.txt 5<<< X`;
 
     const result = klsh.parser.klsh(script);
 
@@ -453,7 +456,8 @@ describe('parser', function() {
         "redirect": [
           { "type": "overwrite", "fd": "2", "value": "err.txt" },
           { "type": "append",    "fd": "3", "value": "append.txt" },
-          { "type": "input",     "fd": "4", "value": "input.txt" }
+          { "type": "input",     "fd": "4", "value": "input.txt" },
+          { "type": "heredoc",   "fd": "5", "value": "X" }
         ]
       }
     ]);
