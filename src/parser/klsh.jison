@@ -3,33 +3,14 @@
 <<EOF>>                                 return 'EOF';
 [0-9]*\>\&[0-9]+                        return 'RD_DUP';
 [0-9]*\>\>                              return 'RD_APPEND';
-[0-9]*\>                                 return 'RD_OVERWRITE';
+[0-9]*\>                                return 'RD_OVERWRITE';
 
-[0-9]*\<                                 return 'RD_INPUT';
+[0-9]*\<                                return 'RD_INPUT';
 \|                                      return 'PIPE';
 (\\(.|\s)|[^\\\'\"\`\(\)\s;|]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\"|\`([^\`\\]|\\.)*\`|\(([^\)\\]|\\.)*\))+  return 'LITERAL';
 [\s;]*[\r\n;][\s;]*                     return 'EOL';
 \s+                                     /* skip whitespace */
 /lex
-
-%{
-// Helper functions used in grammar actions
-function nodesToString(nodes) {
-    return nodes.map(function(n) { return n.value; }).join('');
-}
-
-function mkRedirect(token, nodes, kind) {
-    var m = token.match(/^([0-9]*)(?:>>?|<)$/);
-    var fd = (m && m[1]) ? m[1] : (kind === 'input' ? '0' : '1');
-    return { type: kind, fd: fd, value: nodesToString(nodes) };
-}
-
-function mkDup(token) {
-    var m = token.match(/^([0-9]*?)>&([0-9]+)$/);
-    var fd = (m && m[1] && m[1].length) ? m[1] : '1';
-    return { type: 'overwrite', fd: fd, value: '&' + m[2] };
-}
-%}
 
 %start input
 %token LITERAL PIPE EOF EOL RD_APPEND RD_OVERWRITE RD_INPUT RD_DUP
@@ -83,13 +64,13 @@ redirs
 
 redirect
     : RD_APPEND literal
-        { $$ = mkRedirect($1, $2, 'append'); }
+        { $$ = klsh.parser.mkRedirect($1, $2, 'append'); }
     | RD_OVERWRITE literal
-        { $$ = mkRedirect($1, $2, 'overwrite'); }
+        { $$ = klsh.parser.mkRedirect($1, $2, 'overwrite'); }
     | RD_INPUT literal
-        { $$ = mkRedirect($1, $2, 'input'); }
+        { $$ = klsh.parser.mkRedirect($1, $2, 'input'); }
     | RD_DUP
-        { $$ = mkDup($1); }
+        { $$ = klsh.parser.mkDup($1); }
     ;
 
 literal
