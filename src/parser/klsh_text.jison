@@ -5,8 +5,8 @@
 \$%\`                   {yytext = '`'; return 'TEXT'};
 \$[a-zA-Z0-9_-]+        {yytext = yytext.slice(1); return 'EXPANSION'};
 \$\{[a-zA-Z0-9_-]+\}    {yytext = yytext.slice(2, -1); return 'EXPANSION'};
-\$\([a-zA-Z0-9_-]+\)    {yytext = yytext.slice(2, -1); return 'SUBSTITUTION'};
-\`[a-zA-Z0-9_-]+\`      {yytext = yytext.slice(1, -1); return 'SUBSTITUTION'};
+\$\(([^\)\\]|\\.)*\)    {yytext = yytext.slice(2, -1); return 'SUBSTITUTION'};
+\`([^\`\\]|\\.)*\`      {yytext = yytext.slice(1, -1); return 'SUBSTITUTION'};
 [^$`]+                  return 'TEXT';
 \$                      return 'TEXT';
 /lex

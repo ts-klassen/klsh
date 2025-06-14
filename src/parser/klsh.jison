@@ -1,10 +1,10 @@
 %lex
 %%
-<<EOF>>                                                     return 'EOF';
-\|                                                          return 'PIPE';
-(\\(.|\s)|[^\\\'\"\s;|]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\")+  return 'LITERAL';
-[\s;]*[\r\n;][\s;]*                                         return 'EOL'
-\s+                                                         /* skip whitespace */
+<<EOF>>                                 return 'EOF';
+\|                                      return 'PIPE';
+(\\(.|\s)|[^\\\'\"\`\(\)\s;|]+|\'([^\']*)\'|\"([^\"\\]|\\.)*\"|\`([^\`\\]|\\.)*\`|\(([^\)\\]|\\.)*\))+  return 'LITERAL';
+[\s;]*[\r\n;][\s;]*                     return 'EOL'
+\s+                                     /* skip whitespace */
 /lex
 
 %start input

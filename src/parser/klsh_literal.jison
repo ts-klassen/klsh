@@ -4,7 +4,10 @@
 \\(.|\s)                {yytext = yytext[1]; return 'TEXT'};
 \'([^\']*)\'            return 'SQUOTE';
 \"([^\"\\]|\\.)*\"      return 'DQUOTE';
-[^\\\'\"\s]+            return 'TEXT';
+\$[a-zA-Z0-9_-]+        return 'TEXT';
+\$\(([^\)\\]|\\.)*\)    return 'TEXT';
+\`([^\`\\]|\\.)*\`      return 'TEXT';
+[^\\\'\"\s\`\$]+        return 'TEXT';
 /lex
 
 %start input
