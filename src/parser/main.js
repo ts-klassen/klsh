@@ -27,6 +27,18 @@ function double_quote(text) {
     ]);
 }
 
+function mkRedirect(token, nodes, kind) {
+    var m = token.match(/^([0-9]*)(?:>>?|<)$/);
+    var fd = (m && m[1]) ? m[1] : (kind === 'input' ? '0' : '1');
+    return { type: kind, fd: fd, value: nodes };
+}
+
+function mkDup(token) {
+    var m = token.match(/^([0-9]*?)>&([0-9]+)$/);
+    var fd = (m && m[1] && m[1].length) ? m[1] : '1';
+    return { type: 'overwrite', fd: fd, value: '&' + m[2] };
+}
+
 function replace(str, replacements) {
     let result = str;
 
@@ -38,4 +50,4 @@ function replace(str, replacements) {
     return result;
 }
 
-module.exports = { main, no_quote, single_quote, double_quote };
+module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup };

@@ -4,7 +4,7 @@
   "description": "Minimal text-based pipeline framework for browser environment",
   "main": "dist/klsh.js",
   "scripts": {
-    "test": "npm run build && mocha --recursive tests",
+    "test": "npm run build && NO_COLOR=1 mocha --recursive tests",
     "build": "node build.js",
     "parse": "node build.js && exec $(command -v rlwrap >/dev/null 2>&1 && echo rlwrap) node parse.js",
     "start": "node build.js && command -v rlwrap >/dev/null && rlwrap node klsh.js || node klsh.js"
