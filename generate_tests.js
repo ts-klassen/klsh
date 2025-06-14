@@ -29,8 +29,8 @@ if (fs.existsSync(outDir)) {
 }
 fs.mkdirSync(outDir, { recursive: true });
 
-// Collect definition files
-const defs = fs.readdirSync(defsDir).filter(f => f.endsWith('.txt') || f.endsWith('.json'));
+// Collect definition files – treat .bin test definition files the same as .txt
+const defs = fs.readdirSync(defsDir).filter(f => f.endsWith('.txt') || f.endsWith('.bin') || f.endsWith('.json'));
 if (defs.length === 0) {
   console.log('No test definition files found in', defsDir);
   process.exit(0);
@@ -41,7 +41,7 @@ for (const file of defs) {
   let command;
   let stdin;
   // Load definition
-  if (file.endsWith('.txt')) {
+  if (file.endsWith('.txt') || file.endsWith('.bin')) {
     const lines = fs.readFileSync(fullPath, 'utf8').split(/\r?\n/);
     command = (lines[0] || '').trim();
     stdin = lines.slice(1).join('\n');
