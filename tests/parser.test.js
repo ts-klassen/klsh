@@ -453,10 +453,10 @@ describe('parser', function() {
           [{ "type": "text", "value": "hello" }]
         ],
         "redirect": [
-          { "type": "overwrite", "fd": "1", "value": "overwrite.txt" },
-          { "type": "append",    "fd": "1", "value": "append.txt" },
-          { "type": "input",     "fd": "0", "value": "input.txt" },
-          { "type": "heredoc",   "fd": "0", "value": "Line 1\nLine 2\n" }
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "overwrite.txt"}] },
+          { "type": "append",    "fd": "1", "value": [{"type": "text", "value": "append.txt"}] },
+          { "type": "input",     "fd": "0", "value": [{"type": "text", "value": "input.txt"}] },
+          { "type": "heredoc",   "fd": "0", "value": [{"type": "text", "value": "Line 1\nLine 2\n"}] }
         ]
       }
     ]);
