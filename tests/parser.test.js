@@ -398,4 +398,45 @@ describe('parser', function() {
     ]);
   });
 
+  it('parse redirection operators with explicit file descriptors', function() {
+    const script = `echo test 2> err.txt 3>> append.txt 4< input.txt 5<< EOF\nX\nEOF`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "echo" }],
+        "params": [
+          [{ "type": "text", "value": "test" }]
+        ],
+        "redirect": [
+          { "type": "overwrite", "fd": "2", "value": "err.txt" },
+          { "type": "append",    "fd": "3", "value": "append.txt" },
+          { "type": "input",     "fd": "4", "value": "input.txt" },
+          { "type": "heredoc",   "fd": "5", "value": "X\n" }
+        ]
+      }
+    ]);
+  });
+
+  it('parse file descriptor duplication redirections', function() {
+    const script = `echo dup 2>&3 >&2 3>&1`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "echo" }],
+        "params": [
+          [{ "type": "text", "value": "dup" }]
+        ],
+        "redirect": [
+          { "type": "overwrite", "fd": "2", "value": "&3" },
+          { "type": "overwrite", "fd": "1", "value": "&2" },
+          { "type": "overwrite", "fd": "3", "value": "&1" }
+        ]
+      }
+    ]);
+  });
+
 });
