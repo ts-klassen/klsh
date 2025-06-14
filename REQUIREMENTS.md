@@ -71,10 +71,10 @@ Here is the example JSON structure:
       ]
     ],
     "redirect": [
-      { "type": "overwrite", "fd": "1", "value": "output.txt" },
-      { "type": "append", "fd": "1", "value": "output.txt" },
-      { "type": "input", "fd": "0", "value": "output.txt" },
-      { "type": "heredoc", "fd": "0", "value": "Line 1\nLine 2\n" }
+      { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "output.txt"}] },
+      { "type": "append", "fd": "1", "value": [{"type": "text", "value": "output.txt"}] },
+      { "type": "input", "fd": "0", "value": [{"type": "text", "value": "output.txt"}] },
+      { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "Line 1\nLine 2\n"}] }
     ],
     "pipe": {
       "component": [
