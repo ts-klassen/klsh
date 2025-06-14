@@ -63,7 +63,7 @@
         }
 
         yytext = { type: 'heredoc', fd: fd, value: this.yy.__shared_heredoc_body };
-        return 17;
+        return 'RD_HEREDOC';
     }
 
     // consume the incoming newline (if any) so body starts after it
@@ -147,7 +147,7 @@
     this.yy.__shared_heredoc_body = nodes;
 
     yytext = { type: 'heredoc', fd: fd, value: nodes };
-    return 17;
+    return 'RD_HEREDOC';
 }
 [0-9]*\>                                return 'RD_OVERWRITE';
 [0-9]*\<                                return 'RD_INPUT';
