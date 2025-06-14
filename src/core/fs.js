@@ -69,8 +69,6 @@ async function unlink(path) {
   });
 }
 
-module.exports = { readFile, writeFile, unlink, append };
-
 // Append data (string) to an existing file, or create a new file when it doesn't exist.
 // The operation is performed within a single readwrite transaction so that the
 // read-modify-write cycle is atomic from the IndexedDB point of view.  We avoid
@@ -81,6 +79,11 @@ async function append(path, data) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
+
+    // Ensure any transaction-level aborts are surfaced to the caller.
+    tx.onabort = () => {
+      reject(tx.error || new Error('Transaction aborted'));
+    };
 
     // First, fetch the existing value (if any) _within_ the same transaction.
     const getReq = store.get(path);
@@ -94,4 +97,5 @@ async function append(path, data) {
   });
 }
 
-// (export already included above)
+// Export public API *after* all function declarations for clarity.
+module.exports = { readFile, writeFile, unlink, append };

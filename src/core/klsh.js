@@ -5,6 +5,7 @@ function clone(obj) {
   } else {
     return JSON.parse(JSON.stringify(obj));
   }
+
 }
 
 // Execute a single command stage: name + args with given stdin and env
@@ -26,7 +27,8 @@ async function execute_cmd(cmd, input, env) {
   // -------------------------------------------------------------
   let stdinData = input;
   let stdinPath = null;          // Path for any `<` redirection (only last one counts)
-  const outputRedirs = [];       // Collect output redirections to apply *after* command runs
+  // Collect only the *last* output redirection for each file descriptor, as per POSIX.
+  const lastOutputRedir = {};    // fd -> redirection object
 
   function _norm(p) {
     return typeof p === 'string' ? p.replace(/;+$/, '') : p;
@@ -55,12 +57,15 @@ async function execute_cmd(cmd, input, env) {
         }
       }
 
-      // Record output redirections for later
+      // Track only the last output redirection per fd
       if (rd.type === 'overwrite' || rd.type === 'append') {
-        outputRedirs.push(rd);
+        lastOutputRedir[rd.fd] = rd;
       }
     }
   }
+
+  // Only keep the final redirection per file descriptor.
+  const outputRedirs = Object.values(lastOutputRedir);
 
   // -------------------------------------------------------------
   // Execute the built-in command
@@ -96,6 +101,9 @@ async function execute_cmd(cmd, input, env) {
       }
 
       // Apply output redirections
+      let redirectFd1 = false;
+      let redirectFd2 = false;
+
       for (const rd of outputRedirs) {
         const strObj = await literal_to_string(rd.value, res.env);
         stderrData += strObj.stderr;
@@ -115,14 +123,14 @@ async function execute_cmd(cmd, input, env) {
           return { stdout: '', stderr: stderrData, env: errEnv };
         }
 
-        // When we redirect fd 1 or 2 we suppress that stream from command output
-        if (rd.fd === '1') {
-          stdoutData = '';
-        }
-        if (rd.fd === '2') {
-          stderrData = '';
-        }
+        // Record that we've redirected so we can suppress after processing
+        if (rd.fd === '1') redirectFd1 = true;
+        if (rd.fd === '2') redirectFd2 = true;
       }
+
+      // Suppress streams only after all redirections have been handled
+      if (redirectFd1) stdoutData = '';
+      if (redirectFd2) stderrData = '';
 
       return { stdout: stdoutData, stderr: stderrData, env: clone(res.env) };
     } catch (err) {
@@ -158,13 +166,21 @@ async function run_commands(commands, parentEnv, initialInput = '') {
   let stderr = '';
   let env = clone(parentEnv);
 
+  let prevStdout = initialInput;
+
   for (let i = 0; i < commands.length; i++) {
     const cmd = commands[i];
-    const inData = i === 0 ? initialInput : '';
+
+    // Determine stdin for this command.
+    const inData = i === 0 ? prevStdout : (cmd.pipe ? '' : prevStdout);
+
     const result = await run_pipeline(cmd, inData, env);
+
+    // Update accumulators and previous stdout for next iteration.
     stdout += result.stdout;
     stderr += result.stderr;
     env = result.env;
+    prevStdout = result.stdout;
   }
 
   return { stdout, stderr, env };
