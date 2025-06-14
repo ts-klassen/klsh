@@ -1,0 +1,22 @@
+klsh
+echo file1 > /tmp/cat_stdin_redirect_file_1.txt
+echo file2 > /tmp/cat_stdin_redirect_file_2.txt
+echo file3 > /tmp/cat_stdin_redirect_file_3.txt
+echo case 1
+echo stdin1 | cat < /tmp/cat_stdin_redirect_file_1.txt < /tmp/cat_stdin_redirect_file_2.txt <<< heredoc1 <<< heredoc2 /tmp/cat_stdin_redirect_file_3.txt
+echo case 2
+echo stdin1 | cat < /tmp/cat_stdin_redirect_file_1.txt < /tmp/cat_stdin_redirect_file_2.txt <<< heredoc1 <<< heredoc2
+echo case 3
+echo stdin1 | cat <<< heredoc1 <<< heredoc2 < /tmp/cat_stdin_redirect_file_1.txt < /tmp/cat_stdin_redirect_file_2.txt
+echo case 4
+echo stdin1 | cat <<< heredoc1 < /tmp/cat_stdin_redirect_file_1.txt <<< heredoc2 < /tmp/cat_stdin_redirect_file_2.txt
+echo case 5
+echo stdin1 | cat < /tmp/cat_stdin_redirect_file_1.txt <<< heredoc1 < /tmp/cat_stdin_redirect_file_2.txt <<< heredoc2
+echo case 6
+echo stdin1 | cat < /tmp/cat_stdin_redirect_file_1.txt < /tmp/cat_stdin_redirect_file_2.txt
+echo case 7
+echo stdin1 | cat <<< heredoc1 <<< heredoc2
+echo case 8
+cat < /tmp/cat_stdin_redirect_file_1.txt < /tmp/cat_stdin_redirect_file_2.txt <<< heredoc1 <<< heredoc2
+echo case 9
+cat <<< heredoc1 <<< heredoc2 < /tmp/cat_stdin_redirect_file_1.txt < /tmp/cat_stdin_redirect_file_2.txt
