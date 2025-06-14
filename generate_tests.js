@@ -54,8 +54,23 @@ for (const file of defs) {
     console.warn(`Skipping ${file}: empty command`);
     continue;
   }
+  // If the definition itself launches `klsh` we replace it with `bash` when
+  // gathering the expected output from the reference implementation that
+  // lives in the system shell. This prevents us from recursively invoking
+  // our own (possibly not yet built) klsh binary and instead delegates the
+  // command to the real Bash implementation, which is the behaviour we want
+  // for so-called "os command" style tests.
+
+  let bashCommand = command;
+  // Detect commands that start with the word "klsh" (optionally surrounded by
+  // leading whitespace). We intentionally only rewrite the very first token
+  // so that argument structure remains untouched.
+  if (/^\s*klsh(\s|$)/.test(command)) {
+    bashCommand = command.replace(/^\s*klsh(?=\s|$)/, 'bash');
+  }
+
   // Run real Bash
-  const bash = spawnSync('bash', ['-c', command], { input: stdin, encoding: 'utf8' });
+  const bash = spawnSync('bash', ['-c', bashCommand], { input: stdin, encoding: 'utf8' });
   const expStdout = bash.stdout;
   const expStderr = bash.stderr;
   const expCode = bash.status != null ? bash.status : (bash.error ? 1 : 0);
