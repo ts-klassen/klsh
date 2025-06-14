@@ -146,19 +146,51 @@ commands
         { $1.push($2); $$ = $1; }
     ;
 
+/*
+ * A command consists of an initial component (the executable name) followed by an
+ * arbitrary mix of parameters and redirections in any order, optionally piped to
+ * another command.  Historically the grammar required that **all** parameters
+ * precede redirections (i.e. `cmd arg1 arg2 > out.txt`).  This limitation broke
+ * perfectly valid shell invocations where further parameters appear *after* one
+ * or more redirections (e.g. `cat < in.txt out.txt`).  The `cat_stdin_redirect_file`
+ * unit-test exercises precisely this scenario and previously failed with a parse
+ * error.
+ *
+ * We fix the issue by introducing an `extras` non-terminal which collects an
+ * ordered sequence of literal parameters and redirection nodes as they occur on
+ * the command line.  During the reduce action we separate these two kinds of
+ * tokens into dedicated `params` and `redirect` arrays so that the downstream
+ * execution engine continues to receive the AST in the same shape as before.
+ */
+
 command
-    : literal params redirs PIPE command
+    : literal extras PIPE command
         {
-            var obj = { component: $1, params: $2, pipe: $5 };
-            if ($3.length) obj.redirect = $3;
+            var obj = { component: $1, params: $2.params, pipe: $4 };
+            if ($2.redirs.length) obj.redirect = $2.redirs;
             $$ = obj;
         }
-    | literal params redirs
+    | literal extras
         {
-            var obj = { component: $1, params: $2 };
-            if ($3.length) obj.redirect = $3;
+            var obj = { component: $1, params: $2.params };
+            if ($2.redirs.length) obj.redirect = $2.redirs;
             $$ = obj;
         }
+    ;
+
+/*
+ * Collect zero or more literals / redirects in the order they appear.
+ * The resulting value is an object of the form:
+ *   { params: [...], redirs: [...] }
+ */
+
+extras
+    : /* empty */
+        { $$ = { params: [], redirs: [] }; }
+    | extras literal
+        { $1.params.push($2); $$ = $1; }
+    | extras redirect
+        { $1.redirs.push($2); $$ = $1; }
     ;
 
 params

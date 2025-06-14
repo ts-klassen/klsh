@@ -1,4 +1,4 @@
-// Auto-generated from cat_0_to_255.txt. Do not edit.
+// Auto-generated from cat_0_to_255.bin. Do not edit.
 const { expect } = require('chai');
 const klsh = require('../../dist/klsh.js');
 

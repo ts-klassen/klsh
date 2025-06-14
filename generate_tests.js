@@ -29,8 +29,8 @@ if (fs.existsSync(outDir)) {
 }
 fs.mkdirSync(outDir, { recursive: true });
 
-// Collect definition files
-const defs = fs.readdirSync(defsDir).filter(f => f.endsWith('.txt') || f.endsWith('.json'));
+// Collect definition files – treat .bin test definition files the same as .txt
+const defs = fs.readdirSync(defsDir).filter(f => f.endsWith('.txt') || f.endsWith('.bin') || f.endsWith('.json'));
 if (defs.length === 0) {
   console.log('No test definition files found in', defsDir);
   process.exit(0);
@@ -41,7 +41,7 @@ for (const file of defs) {
   let command;
   let stdin;
   // Load definition
-  if (file.endsWith('.txt')) {
+  if (file.endsWith('.txt') || file.endsWith('.bin')) {
     const lines = fs.readFileSync(fullPath, 'utf8').split(/\r?\n/);
     command = (lines[0] || '').trim();
     stdin = lines.slice(1).join('\n');
@@ -54,8 +54,23 @@ for (const file of defs) {
     console.warn(`Skipping ${file}: empty command`);
     continue;
   }
+  // If the definition itself launches `klsh` we replace it with `bash` when
+  // gathering the expected output from the reference implementation that
+  // lives in the system shell. This prevents us from recursively invoking
+  // our own (possibly not yet built) klsh binary and instead delegates the
+  // command to the real Bash implementation, which is the behaviour we want
+  // for so-called "os command" style tests.
+
+  let bashCommand = command;
+  // Detect commands that start with the word "klsh" (optionally surrounded by
+  // leading whitespace). We intentionally only rewrite the very first token
+  // so that argument structure remains untouched.
+  if (/^\s*klsh(\s|$)/.test(command)) {
+    bashCommand = command.replace(/^\s*klsh(?=\s|$)/, 'bash');
+  }
+
   // Run real Bash
-  const bash = spawnSync('bash', ['-c', command], { input: stdin, encoding: 'utf8' });
+  const bash = spawnSync('bash', ['-c', bashCommand], { input: stdin, encoding: 'utf8' });
   const expStdout = bash.stdout;
   const expStderr = bash.stderr;
   const expCode = bash.status != null ? bash.status : (bash.error ? 1 : 0);

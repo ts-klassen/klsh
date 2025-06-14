@@ -52,8 +52,17 @@ async function execute_cmd(cmd, input, env) {
         } else if (rd.type === 'heredoc') {
           const hereObj = await literal_to_string(rd.value, env);
           stderr += hereObj.stderr;
-          stdinData = hereObj.text;
-          stdinPath = null; // heredoc is not a file path
+          // A here-document (<<) retains the exact body captured from the
+          // input stream, which *may* already include a trailing newline.  A
+          // here-string (<<<) on the other hand supplies the specified text
+          // **followed by** a newline.  The parser currently represents both
+          // operators using the same `heredoc` node type, so we cannot easily
+          // distinguish them here.  Instead we emulate bash behaviour by
+          // appending a single newline **iff** one is not already present.  This
+          // yields the correct result for both constructs and satisfies the
+          // expectations of the unit-tests.
+          stdinData = hereObj.text.endsWith('\n') ? hereObj.text : hereObj.text + '\n';
+          stdinPath = null; // heredoc/here-string is not a file path
         }
       }
 
@@ -221,6 +230,15 @@ async function main({ args = [], stdin = '', input = '', env: parentEnv = {} }) 
   let stdout = '';
   let stderr = '';
   let env = clone(parentEnv);
+  // An empty script is a no-op: exit 0 without error output so that nested
+  // invocations such as `klsh` receiving no script via STDIN behave like the
+  // real shell (which simply returns).  This also avoids spurious parse-error
+  // diagnostics which broke the cat_stdin_redirect_file unit-test.
+  if (stdin.trim().length === 0) {
+    env['?'] = 0;
+    return { stdout, stderr, env };
+  }
+
   try {
     const commands = klsh.parser.klsh(stdin);
     const result = await run_commands(commands, env, input);
