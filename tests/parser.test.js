@@ -462,4 +462,54 @@ describe('parser', function() {
     ]);
   });
 
+  it('multy multy-line heredoc parse redirection operators', function() {
+    const script = `cat << EOF1 > a1; cat << EOF2 > a2\nhello a1\nnext line a1\nEOF1\nhello a2\nnext line a2\nEOF2`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "cat" }],
+        "params": [],
+        "redirect": [
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a1"}] },
+        ]
+      },
+      {
+        "component": [{ "type": "text", "value": "cat" }],
+        "params": [],
+        "redirect": [
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a1"}] },
+        ]
+      }
+    ]);
+  });
+
+  it('pipe multy-line heredoc parse redirection operators', function() {
+    const script = `cat << EOF1 > a1 | cat << EOF2 > a2\nhello a1\nnext line a1\nEOF1\nhello a2\nnext line a2\nEOF2`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "cat" }],
+        "params": [],
+        "redirect": [
+          { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+          { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a1"}] },
+        ],
+        "pipe": {
+          "component": [{ "type": "text", "value": "cat" }],
+          "params": [],
+          "redirect": [
+            { "type": "heredoc", "fd": "0", "value": [{"type": "text", "value": "hello a1\nnext line a1\n"}] },
+            { "type": "overwrite", "fd": "1", "value": [{"type": "text", "value": "a1"}] },
+          ]
+        }
+      }
+    ]);
+  });
+
 });
