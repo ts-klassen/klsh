@@ -377,4 +377,25 @@ describe('parser', function() {
     ]);
   });
 
+  it('parse redirection operators', function() {
+    const script = `echo hello > overwrite.txt >> append.txt < input.txt << EOF\nLine 1\nLine 2\nEOF`;
+
+    const result = klsh.parser.klsh(script);
+
+    expect(result).to.deep.equal([
+      {
+        "component": [{ "type": "text", "value": "echo" }],
+        "params": [
+          [{ "type": "text", "value": "hello" }]
+        ],
+        "redirect": [
+          { "type": "overwrite", "fd": "1", "value": "overwrite.txt" },
+          { "type": "append",    "fd": "1", "value": "append.txt" },
+          { "type": "input",     "fd": "0", "value": "input.txt" },
+          { "type": "heredoc",   "fd": "0", "value": "Line 1\nLine 2\n" }
+        ]
+      }
+    ]);
+  });
+
 });
