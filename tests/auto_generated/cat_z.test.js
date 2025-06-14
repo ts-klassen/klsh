@@ -5,8 +5,7 @@ const klsh = require('../../dist/klsh.js');
 describe('auto-generated cat_z', function() {
   it("bash: cat -z", async function() {
     const stdin = "";
-    const args = ["-z"];
-    const result = await klsh.cat.main({ args, stdin, env: {} });
+    const result = await klsh.klsh.main({ stdin: "cat -z", input: stdin, env: {} });
     expect(result.stdout).to.equal("");
     expect(result.stderr).to.equal("cat: invalid option -- 'z'\nTry 'cat --help' for more information.\n");
     expect(result.env['?']).to.equal(1);
