@@ -60,8 +60,7 @@ for (const file of defs) {
   const expStderr = bash.stderr;
   const expCode = bash.status != null ? bash.status : (bash.error ? 1 : 0);
   // Determine command parts
-  const parts = command.split(/\s+/).filter(Boolean);
-  const name = parts[0];
+  // We now test through the full shell, not individual built-ins.
   // Prepare test file content
   const testName = path.basename(file, path.extname(file)).replace(/[^a-zA-Z0-9_]/g, '_');
   const outFile = path.join(outDir, testName + '.test.js');
@@ -74,8 +73,7 @@ for (const file of defs) {
   // Safely quote the test description using JSON.stringify to handle special characters
   content.push(`  it(${JSON.stringify('bash: ' + command)}, async function() {`);
   content.push(`    const stdin = ${JSON.stringify(stdin)};`);
-  content.push(`    const args = ${JSON.stringify(parts.slice(1))};`);
-  content.push('    const result = await klsh.' + name + '.main({ args, stdin, env: {} });');
+  content.push('    const result = await klsh.klsh.main({ stdin: ' + JSON.stringify(command) + ', input: stdin, env: {} });');
   content.push(`    expect(result.stdout).to.equal(${JSON.stringify(expStdout)});`);
   content.push(`    expect(result.stderr).to.equal(${JSON.stringify(expStderr)});`);
   content.push(`    expect(result.env['?']).to.equal(${expCode});`);
