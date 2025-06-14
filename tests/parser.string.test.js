@@ -78,4 +78,38 @@ describe('parser.klsh_literal', function() {
       }
     ]);
   });
+
+  // ------------------------------------------------------------------
+  // Additional substitution patterns introduced in recent grammar change
+  // ------------------------------------------------------------------
+
+  it('backtick command substitution', function() {
+    const input = '`pwd`';
+    const result = klsh.parser.klsh_literal(input);
+    expect(result).to.deep.equal([
+      {
+        type: 'substitution',
+        value: [{
+          component: [{ type: 'text', value: 'pwd' }],
+          params: []
+        }]
+      }
+    ]);
+  });
+
+  it('command substitution containing arguments', function() {
+    const input = '$(pwd -P)';
+    const result = klsh.parser.klsh_literal(input);
+    expect(result).to.deep.equal([
+      {
+        type: 'substitution',
+        value: [{
+          component: [{ type: 'text', value: 'pwd' }],
+          params: [
+            [{ type: 'text', value: '-P' }]
+          ]
+        }]
+      }
+    ]);
+  });
 });

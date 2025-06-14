@@ -7,7 +7,10 @@ function main({ args = [], stdin = '', env = {} }) {
 }
 
 function no_quote(text) {
-    return text;
+    return replace(text, [
+        ['\\$', '$%$'],  // Dollar sign replacement for klsh_text
+        ['\\`', '$%`'],  // Backtick replacement for klsh_text
+    ]);
 }
 
 function single_quote(text) {
@@ -16,9 +19,9 @@ function single_quote(text) {
 
 function double_quote(text) {
     return replace(text.slice(1, -1), [
-        ['\\$', '$'],    // Dollar sign replacement
+        ['\\$', '$%$'],  // Dollar sign replacement for klsh_text
         ['\\"', '"'],    // Double quote replacement
-        ['\\`', '`'],    // Backtick replacement
+        ['\\`', '$%`'],  // Backtick replacement for klsh_text
         ['\\\n', ''],    // Backslash newline (line continuation) replaced with nothing
         ['\\\\', '\\']   // Double backslash replacement (done last)
     ]);
