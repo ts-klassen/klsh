@@ -7,7 +7,7 @@ We are building a web-based application that emulates the flexibility of Bash pi
 1. **Components and Pipelines**
    - Users can define reusable components, each performing a specific function (e.g., `cat`, `sort`, `head`, `tail`).
    - Components can be chained into pipelines where the output of one feeds into the next.
-   - Each component can pipe its output to a single downstream component only (no branching).
+   - Piping is optional. When a component appears in a pipeline, it pipes its output directly to the next component; otherwise its output is returned as the final result.
 2. **I/O Redirection and Appending**
    - Input redirection from files using shell-style syntax (`< file.txt`).
    - Output redirection to files with overwrite (`> file.txt`) or append (`>> file.txt`).
@@ -102,13 +102,13 @@ Here is the example JSON structure:
 ## Streams and Redirection Handling
 - Each component operates on three streams: stdin, stdout, stderr.
 - The parser interprets redirection operators and maps them to stream connections or file nodes.
-- Merging and splitting of streams is handled in the JSON tree via specific flags or branch nodes.
+- Stream merging and splitting (e.g., `2>&1`) is represented in the JSON tree with dedicated flags or nodes.
 
 ## Parser and Execution Engine
 - A parser transforms Bash-like text input into the JSON tree structure (e.g., using JISON or a similar tool).
 - The execution engine processes nodes:
   1. Execute sub-commands for command substitution.
-  2. Wire up streams according to the tree (including branching, redirection, and file I/O).
+  2. Wire up streams according to the tree (including redirection and file I/O).
   3. Handle background processes asynchronously when `&` is specified.
 
 ## User Interface
