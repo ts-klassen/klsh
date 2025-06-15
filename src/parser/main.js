@@ -50,4 +50,9 @@ function replace(str, replacements) {
     return result;
 }
 
-module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup };
+function build() {
+    // TODO
+    return "echo arg1";
+}
+
+module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup, build };
