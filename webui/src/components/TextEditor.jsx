@@ -10,8 +10,10 @@ import json2text from '../util/json2text.js';
 // ---------------------------------------------------------------------------
 
 // Pull in the ESM build (works fine with Vite)
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.main';
 import 'monaco-editor/min/vs/editor/editor.main.css';
+// Register Bash/Shell syntax highlighting
+import 'monaco-editor/esm/vs/basic-languages/shell/shell.contribution';
 
 // IMPORTANT:  The worker has to be imported so Vite can bundle it.  The
 // `?worker` suffix instructs Vite to treat the imported module as a Web
