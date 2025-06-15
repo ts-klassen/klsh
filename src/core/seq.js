@@ -121,4 +121,15 @@ async function main({ args = [], stdin = '', env = {} }) {
   return { stdout: out, stderr: '', env: newEnv };
 }
 
-module.exports = { main };
+
+function getDescription() { return 'Print sequences of numbers'; }
+
+function getOptions() {
+  return [
+    { key: 'format', short_tag: 'f', long_tag: 'format', spec: 'string', help: 'use printf style floating point FORMAT' },
+    { key: 'separator', short_tag: 's', long_tag: 'separator', spec: 'string', help: 'use S as a separator between numbers' },
+    { key: 'equal_width', short_tag: 'w', long_tag: '', spec: 'flag', help: 'equalize width by padding with leading zeros' }
+  ];
+}
+
+module.exports = { main, getDescription, getOptions };

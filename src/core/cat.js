@@ -1,19 +1,7 @@
 // 'cat' command: output file(s) or stdin with GNU-like options
 async function main({ args = [], stdin = '', env = {} }) {
   // parse supported options
-  const optionSpec = [
-    { key: 'number', short_tag: 'n', long_tag: 'number', spec: 'flag', help: 'number all output lines' },
-    { key: 'number_nonblank', short_tag: 'b', long_tag: 'number-nonblank', spec: 'flag', help: 'number nonempty output lines' },
-    { key: 'squeeze_blank', short_tag: 's', long_tag: 'squeeze-blank', spec: 'flag', help: 'suppress repeated empty output lines' },
-    { key: 'show_nonprinting', short_tag: 'v', long_tag: 'show-nonprinting', spec: 'flag', help: 'use ^ and M- notation, except for LFD and TAB' },
-    { key: 'show_ends', short_tag: 'E', long_tag: 'show-ends', spec: 'flag', help: 'display $ at end of each line' },
-    { key: 'show_tabs', short_tag: 'T', long_tag: 'show-tabs', spec: 'flag', help: 'display TAB characters as ^I' },
-    { key: 'show_all', short_tag: 'A', long_tag: 'show-all', spec: 'flag', help: 'equivalent to -vET' },
-    { key: 'opt_e', short_tag: 'e', long_tag: '', spec: 'flag', help: 'equivalent to -vE' },
-    { key: 'opt_t', short_tag: 't', long_tag: '', spec: 'flag', help: 'equivalent to -vT' },
-    { key: 'opt_u', short_tag: 'u', long_tag: '', spec: 'flag', help: 'ignored' }
-  ];
-  const { options, operands, unknown } = klsh.parse_args.parse(args, optionSpec);
+  const { options, operands, unknown } = klsh.parse_args.parse(args, getOptions());
   // handle unrecognized options
   if (unknown && unknown.length > 0) {
     const opt = unknown[0];
@@ -121,4 +109,28 @@ async function main({ args = [], stdin = '', env = {} }) {
   };
 }
 
-module.exports = { main };
+// Export API
+
+
+function getDescription() {
+  return 'Concatenate files and print on the standard output';
+}
+
+function getOptions() {
+  // Re-use the option specification defined at the top of the file so that the
+  // data returned here stays consistent with the options recognised by `main`.
+  return [
+    { key: 'number', short_tag: 'n', long_tag: 'number', spec: 'flag', help: 'number all output lines' },
+    { key: 'number_nonblank', short_tag: 'b', long_tag: 'number-nonblank', spec: 'flag', help: 'number nonempty output lines' },
+    { key: 'squeeze_blank', short_tag: 's', long_tag: 'squeeze-blank', spec: 'flag', help: 'suppress repeated empty output lines' },
+    { key: 'show_nonprinting', short_tag: 'v', long_tag: 'show-nonprinting', spec: 'flag', help: 'use ^ and M- notation, except for LFD and TAB' },
+    { key: 'show_ends', short_tag: 'E', long_tag: 'show-ends', spec: 'flag', help: 'display $ at end of each line' },
+    { key: 'show_tabs', short_tag: 'T', long_tag: 'show-tabs', spec: 'flag', help: 'display TAB characters as ^I' },
+    { key: 'show_all', short_tag: 'A', long_tag: 'show-all', spec: 'flag', help: 'equivalent to -vET' },
+    { key: 'opt_e', short_tag: 'e', long_tag: '', spec: 'flag', help: 'equivalent to -vE' },
+    { key: 'opt_t', short_tag: 't', long_tag: '', spec: 'flag', help: 'equivalent to -vT' },
+    { key: 'opt_u', short_tag: 'u', long_tag: '', spec: 'flag', help: 'ignored' }
+  ];
+}
+
+module.exports = { main, getDescription, getOptions };

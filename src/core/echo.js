@@ -70,11 +70,7 @@ async function main({ args = [], stdin = '', env = {} }) {
   \\v      vertical tab
   \\0NNN   byte with octal value NNN (1 to 3 digits)
   \\xHH    byte with hexadecimal value HH (1 to 2 digits)`;
-  const optionSpec = [
-    { key: 'no_newline', short_tag: 'n', spec: 'flag', help: 'do not output the trailing newline' },
-    { key: 'interpret_escapes', short_tag: 'e', spec: 'flag', help: eHelp }
-  ];
-  const { options, operands } = klsh.parse_args.parse(args, optionSpec);
+  const { options, operands } = klsh.parse_args.parse(args, getOptions().map(o => (o.key === 'interpret_escapes' ? { ...o, help: eHelp } : o)));
   const noNl = options.no_newline === true;
   const interp = options.interpret_escapes === true;
   let stdout;
@@ -91,4 +87,15 @@ async function main({ args = [], stdin = '', env = {} }) {
   return { stdout, stderr, env: newEnv };
 }
 
-module.exports = { main };
+
+function getDescription() { return 'Display a line of text'; }
+
+function getOptions() {
+  return [
+    { key: 'no_newline', short_tag: 'n', long_tag: '', spec: 'flag', help: 'do not output the trailing newline' },
+    { key: 'interpret_escapes', short_tag: 'e', long_tag: '', spec: 'flag', help: 'enable interpretation of backslash escapes' },
+    { key: 'disable_escapes', short_tag: 'E', long_tag: '', spec: 'flag', help: 'disable interpretation of backslash escapes (default)' }
+  ];
+}
+
+module.exports = { main, getDescription, getOptions };
