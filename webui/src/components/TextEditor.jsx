@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // Utilities shared between the Monaco and <textarea> implementations.
 import { usePipelineStore } from '../store/pipeline.jsx';
@@ -17,75 +17,55 @@ function debounce(fn, delay) {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Try to load Monaco Editor.  If that fails for any reason we fall back to
-//    a plain <textarea>.  This guarantees that typing in the right pane always
-//    works – even in environments where web-workers or import.meta.url issues
-//    prevent Monaco from initialising correctly.
-// ---------------------------------------------------------------------------
+// eslint-disable-next-line import/no-extraneous-dependencies
+// We rely on the ESM build of Monaco which works smoothly with Vite without
+// additional plugins.
+// See https://github.com/microsoft/monaco-editor#using-loader-or-esm for details.
+//
+// - editor.api.js exposes the full API *without* automatically attempting to
+//   spin up Web-Workers.
+// - We therefore wire up the single generic editor worker manually below.  For
+//   our current usage (a simple shell/plaintext language) this is fully
+//   sufficient and keeps the bundle small.
 
-let monaco = null;
-try {
-  // eslint-disable-next-line global-require, import/no-extraneous-dependencies
-  monaco = require('monaco-editor');
-} catch (_) {
-  // Ignore – we’ll use the fallback component below.
-}
-
-// ---------------------------------------------------------------------------
-// 2. Fallback implementation – controlled <textarea>
-// ---------------------------------------------------------------------------
-
-function FallbackEditor() {
-  const [value, setValue] = useState('');
-  const lastSyncedRef = useRef('');
-  const skipStoreSyncRef = useRef(false);
-
-  const pipeline = usePipelineStore((s) => s.pipeline);
-  const setPipeline = usePipelineStore((s) => s.setPipeline);
-
-  // Local → store
-  const onChange = debounce((next) => {
-    skipStoreSyncRef.current = true; // this update originates from user typing
-    // eslint-disable-next-line no-console
-    console.log('[FallbackEditor] onChange – raw text:', next);
-    try {
-      const json = text2json(next);
-      // eslint-disable-next-line no-console
-      console.log('[FallbackEditor] text2json result:', json);
-      if (json) setPipeline(json);
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('[FallbackEditor] Parsing failed:', err);
-    }
-  }, 250);
-
-  // store → local
-  useEffect(() => {
-    const expected = json2text(pipeline);
-    if (skipStoreSyncRef.current) {
-      // Skip once – this store update was triggered by the same editor.
-      skipStoreSyncRef.current = false;
-    } else if (expected !== lastSyncedRef.current) {
-      lastSyncedRef.current = expected;
-      setValue(expected);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pipeline]);
-
-  return (
-    <textarea
-      style={{ width: '100%', height: '100%', resize: 'none' }}
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value);
-        onChange(e.target.value);
-      }}
-    />
-  );
-}
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import 'monaco-editor/min/vs/editor/editor.main.css';
 
 // ---------------------------------------------------------------------------
-// 3. Monaco implementation (only used if import succeeded)
+// Web-Worker wiring – required when consuming the ESM build inside Vite.
+// ---------------------------------------------------------------------------
+
+/* global self */
+// eslint-disable-next-line no-restricted-globals
+self.MonacoEnvironment = {
+  getWorker() {
+    // `editor.worker` provides tokenization, code folding etc. for *all*
+    // languages when no dedicated worker is registered – perfect for our use
+    // case (custom "shell" language defined elsewhere).
+    //
+    // The `?worker` suffix lets Vite treat the import as a Web-Worker module.
+    // The 
+    //   { type: 'module' }
+    // option makes sure the browser interprets it as an ES module so that all
+    // imports inside the worker keep working.
+    //
+    // Ref: https://vitejs.dev/guide/features.html#web-workers
+    //
+    // We do *not* lazily create different workers per label because we only
+    // ever use the generic one.
+
+    return new Worker(
+      new URL(
+        'monaco-editor/esm/vs/editor/editor.worker?worker',
+        import.meta.url
+      ),
+      { type: 'module' }
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// 2. Monaco implementation
 // ---------------------------------------------------------------------------
 
 function MonacoEditor() {
@@ -139,6 +119,7 @@ function MonacoEditor() {
     return () => {
       changeSub.dispose();
       editorRef.current?.dispose();
+      editorRef.current = null;
     };
   }, [setPipeline]);
 
@@ -161,12 +142,9 @@ function MonacoEditor() {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Public component: pick Monaco if available, else fallback.
+// 3. Public component
 // ---------------------------------------------------------------------------
 
 export default function TextEditor() {
-  if (monaco) return <MonacoEditor />;
-  // eslint-disable-next-line no-console
-  console.warn('[TextEditor] Monaco not available – using <textarea> fallback');
-  return <FallbackEditor />;
+  return <MonacoEditor />;
 }
