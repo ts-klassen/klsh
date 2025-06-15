@@ -60,4 +60,10 @@ async function main({ args = [], stdin = '', env = {} }) {
   return { stdout: outData, stderr: '', env: Object.assign({}, env, {'?': 0}) };
 }
 
-module.exports = { main };
+// Description and option metadata
+
+function getDescription() { return 'Convert and copy files'; }
+
+function getOptions() { return []; }
+
+module.exports = { main, getDescription, getOptions };

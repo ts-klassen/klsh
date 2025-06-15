@@ -16,4 +16,9 @@ async function main({ args = [], stdin = '', env = {} }) {
   return { stdout, stderr, env: newEnv };
 }
 
-module.exports = { main };
+
+function getDescription() { return 'Concatenate and print files in reverse'; }
+
+function getOptions() { return []; }
+
+module.exports = { main, getDescription, getOptions };
