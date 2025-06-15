@@ -112,5 +112,65 @@ Here is the example JSON structure:
 - **Text-Based Interface**: Initial interface accepts Bash-style syntax and displays plain-text output.
 - **Future GUI**: A drag-and-drop visual builder can leverage the same JSON structure to construct pipelines interactively.
 
+## Web UI
+
+The web interface will provide users with a flexible and intuitive way to build and run their pipelines. The UI will support both a graphical drag-and-drop mode and a text-based mode that resembles Bash syntax. Users can easily toggle between these modes, and the system will synchronize the configuration between them.
+
+### Core Features of the Web UI:
+
+1. **Drag-and-Drop Visual Builder**:
+   - Users can visually create pipelines by dragging components onto a canvas and connecting them.
+   - Each component block will represent a command with its own configuration options.
+
+2. **Text-Based Mode**:
+   - Users can switch to a text editor to define pipelines using Bash-like syntax.
+   - The system will parse the text input into the internal JSON structure and keep both views in sync.
+
+3. **Responsive Design for Mobile**:
+   - On narrow screens or smartphone devices, the UI will adapt by using modals or full-screen overlays for configuration, ensuring a touch-friendly experience.
+
+4. **Component Configuration**:
+   - Each component has a set of options such as flags, parameters, and file redirections.
+   - These will be presented in the UI as checkboxes for flags, input fields for text or numeric values, and dropdowns where appropriate.
+   - Each option will include a help tooltip that shows what the option does.
+
+5. **Custom Configuration UI**:
+   - Components can optionally provide a special function to override the default configuration panel with a custom UI.
+
+6. **Execution Feedback**:
+   - When a pipeline is executed, the standard output and standard error streams will be displayed after execution.
+   - If no redirection is applied, any errors will be clearly shown in the output section to help users diagnose issues.
+
+7. **Component Descriptions**:
+   - Each component will provide a description function that returns a brief explanation of its purpose.
+   - Users can view these descriptions either as tooltips or in a searchable component library for better usability.
+
+## Component Interface Requirements
+
+Each component in the system will adhere to a standardized interface defined as follows:
+
+1. **Main Execution Function**:
+   - `main({stdin, env}) => {stdout, stderr, env}`
+   This is the primary function for the component’s execution. It takes standard input and environment variables, and returns standard output, standard error, and updated environment variables.
+
+2. **Description Function**:
+   - `getDescription() => string`
+   This function returns a short text description explaining what the component does. This description will be used in the UI for tooltips and documentation views.
+
+3. **Options Function**:
+   - `getOptions() => Array<optionSpec>`
+   This function returns an array of optionSpec objects, each representing a configurable option or flag for the component. Each `optionSpec` object will have the following keys:
+   - `key`: A unique identifier for the option.
+   - `short_tag`: The short form of the option, like `-h`.
+   - `long_tag`: The long form of the option, like `--help`.
+   - `spec`: Defines whether the option is a `flag` (no value, just a toggle) or a `string` (a value input).
+   - `help`: A string explaining what the option does.
+
+4. **Custom Configuration UI (Optional)**:
+   - `getCustomUI() => UIComponent` (optional)
+   This optional function returns a custom UI component or configuration panel if the component requires a specialized interface beyond the standard options. If not provided, the default UI will be used.
+
+This consistent interface ensures that each component can be easily integrated into the graphical UI and text-based pipeline definitions, and that all components remain modular and consistent.
+
 ---
 This document serves as the blueprint for implementing the core framework. Subsequent documentation will detail the parser grammar, component API, and engine architecture.
