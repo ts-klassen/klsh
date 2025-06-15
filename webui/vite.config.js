@@ -12,6 +12,11 @@ const klshAbsolute = resolve(__dirname, '../dist/klsh.js');
 export default defineConfig({
   root: __dirname,
 
+  // Generate *relative* asset URLs so a built index.html works from any
+  // sub-directory (e.g. dist/release/) instead of assuming it is served from
+  // the web-server root.
+  base: './',
+
   plugins: [react()],
 
   // Allow imports that reach one directory up (../dist/klsh.js)

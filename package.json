@@ -9,7 +9,9 @@
     "dev:webui": "vite --config webui/vite.config.js",
     "build:webui": "vite build --config webui/vite.config.js",
     "parse": "node build.js && exec $(command -v rlwrap >/dev/null 2>&1 && echo rlwrap) node parse.js",
-    "start": "node build.js && command -v rlwrap >/dev/null && rlwrap node klsh.js || node klsh.js"
+    "start": "node build.js && command -v rlwrap >/dev/null && rlwrap node klsh.js || node klsh.js",
+    "build:release": "npm run build && npm run build:webui && rm -rf dist/release && mkdir -p dist/release && cp -R webui/dist/* dist/release/ && cp dist/klsh.js dist/release/",
+    "build:zip": "npm run build:release && rm -f dist/klsh-webui.zip && (cd dist/release && zip -r ../klsh-webui.zip .)"
   },
   "keywords": [
     "shell",
