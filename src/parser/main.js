@@ -95,11 +95,10 @@ function build(ast) {
 
     // Quote a string using the rules described above.
     function quoteIfNeeded(str) {
-        // Safe (unquoted) when matches entirely [A-Za-z0-9_-]+ (hyphen at any
-        // position) or begins with '-' (options) or is purely numeric.
-        //   * The tests emit '-n' and '10' without quotes – both are matched by
-        //     this expression.
-        const safeRe = /^-?[A-Za-z0-9_-]+$/;
+        // Safe (unquoted) when the entire string matches the allowed
+        // character set: [A-Za-z0-9_-]+ (covers flags like "-n" and numeric
+        // args such as "10").
+        const safeRe = /^[A-Za-z0-9_-]+$/;
         if (safeRe.test(str)) return str;
 
         // Replace every single quote with the sequence '\'"'"\' which closes
