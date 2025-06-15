@@ -1,32 +1,15 @@
-let klsh;
-if (typeof window === 'undefined') {
-  // Node environment (unit tests)
-  // eslint-disable-next-line import/no-unresolved, global-require
-  klsh = require('../../../dist/klsh.js');
-} else {
-  klsh = window.klsh;
-}
-
-function fallbackBuild(pipeline) {
-  if (!pipeline || !pipeline.length) return '';
-  let out = '';
-  let cur = pipeline[0];
-  while (cur) {
-    out += cur.component.map((t) => t.value).join('');
-    for (const param of cur.params || []) {
-      out += ' ' + param.map((t) => t.value).join('');
-    }
-    if (cur.pipe) out += ' | ';
-    cur = cur.pipe;
-  }
-  return out;
-}
+// Strict builder wrapper – no fallback.
+/* eslint-disable import/no-unresolved, global-require */
+const klsh =
+  typeof window === 'undefined'
+    ? require('../../../dist/klsh.js')
+    : window.klsh;
 
 export default function json2text(pipeline) {
-  try {
-    if (klsh?.parser?.build) return klsh.parser.build(pipeline) || '';
-  } catch (_) {
-    /* ignore */
+  if (!klsh?.parser?.build) {
+    throw new Error(
+      'klsh.parser.build is undefined – ensure dist/klsh.js is loaded before using json2text.'
+    );
   }
-  return fallbackBuild(pipeline);
+  return klsh.parser.build(pipeline) || '';
 }
