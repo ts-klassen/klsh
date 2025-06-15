@@ -52,7 +52,7 @@ function replace(str, replacements) {
 
 function build() {
     // TODO
-    return "echo arg1";
+    return "echo arg1;\n";
 }
 
 module.exports = { main, no_quote, single_quote, double_quote, mkRedirect, mkDup, build };
