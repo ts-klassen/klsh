@@ -18,9 +18,7 @@ We are building a web-based application that emulates the flexibility of Bash pi
 4. **File I/O**
    - Reading input from files via `< file.txt` and here-documents (`<<EOF … EOF`).
    - Writing output to files using the browser's File API for virtual file operations.
-5. **Background Execution**
-   - Support background execution of components using symbols like `&`.
-   - Track background processes and their states within the framework.
+
 
 ## Data Structure
 Internally, the application uses a tree-like JSON representation. All string values are represented as arrays of segments, where each segment is an object with a `type` field. For simple literal strings without expansions or substitutions, use a single-element array containing an object of:
@@ -109,7 +107,6 @@ Here is the example JSON structure:
 - The execution engine processes nodes:
   1. Execute sub-commands for command substitution.
   2. Wire up streams according to the tree (including redirection and file I/O).
-  3. Handle background processes asynchronously when `&` is specified.
 
 ## User Interface
 - **Text-Based Interface**: Initial interface accepts Bash-style syntax and displays plain-text output.
