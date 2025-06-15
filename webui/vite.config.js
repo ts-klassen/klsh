@@ -1,22 +1,44 @@
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { defineConfig } from 'vite';
+import fs from 'node:fs';
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
-// Compute the absolute path of the directory that contains this config file
+// Compute absolute paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const klshAbsolute = resolve(__dirname, '../dist/klsh.js');
 
 export default defineConfig({
-  // The project’s web root is the `webui/` folder itself (where index.html
-  // resides).  Vite uses this to resolve all entry points during dev and build.
   root: __dirname,
 
   plugins: [react()],
 
+  // Allow imports that reach one directory up (../dist/klsh.js)
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
+
+  /**
+   * Dev-server middleware: respond to /dist/klsh.js with the pre-built bundle
+   * that lives outside the web root.  This prevents 404s while keeping the
+   * relative <script src="../dist/klsh.js"> in index.html working for both
+   * development and the static production build.
+   */
+  configureServer(server) {
+    server.middlewares.use((req, res, next) => {
+      if (req.url === '/dist/klsh.js') {
+        res.setHeader('Content-Type', 'application/javascript');
+        fs.createReadStream(klshAbsolute).pipe(res);
+        return; // do NOT call next()
+      }
+      next();
+    });
+  },
+
   build: {
-    // Emit the production bundle into `webui/dist` so it stays alongside the
-    // source files.  `outDir` is resolved relative to `root`.
     outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true,
   },

@@ -45,6 +45,10 @@ export default function Canvas() {
   // keep nodes/edges in sync with pipeline updates from editor
   useEffect(() => {
     const { nodes: nextNodes, edges: nextEdges } = json2flow(pipeline);
+    // eslint-disable-next-line no-console
+    console.log('[Canvas] Pipeline updated:', pipeline);
+    // eslint-disable-next-line no-console
+    console.log('[Canvas] New nodes/edges:', nextNodes, nextEdges);
     setNodes(nextNodes);
     setEdges(nextEdges);
   }, [pipeline, setNodes, setEdges]);

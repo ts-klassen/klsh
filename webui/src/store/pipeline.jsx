@@ -7,7 +7,11 @@ import { create } from 'zustand';
 
 export const usePipelineStore = create((set, get) => ({
   pipeline: [],
-  setPipeline: (json) => set({ pipeline: json }),
+  setPipeline: (json) => {
+    // eslint-disable-next-line no-console
+    console.log('[PipelineStore] setPipeline called with:', json);
+    set({ pipeline: json });
+  },
   update: (fn) => {
     const draft = JSON.parse(JSON.stringify(get().pipeline));
     fn(draft);
@@ -27,6 +31,9 @@ if (typeof window !== 'undefined' && import.meta.env?.DEV) {
   window.loadPipeline = (bashStr) => {
     if (typeof bashStr !== 'string') return;
 
+    // eslint-disable-next-line no-console
+    console.log('[loadPipeline] Building pipeline from:', bashStr);
+
     const commands = bashStr.split('|').map((s) => s.trim()).filter(Boolean);
     if (!commands.length) return;
 
@@ -43,7 +50,11 @@ if (typeof window !== 'undefined' && import.meta.env?.DEV) {
       cmdObjs[i].pipe = cmdObjs[i + 1];
     }
 
-    usePipelineStore.getState().setPipeline([cmdObjs[0]]);
+    const result = [cmdObjs[0]];
+    // eslint-disable-next-line no-console
+    console.log('[loadPipeline] Resulting JSON:', result);
+
+    usePipelineStore.getState().setPipeline(result);
   };
 }
 

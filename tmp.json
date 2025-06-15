@@ -1,0 +1,29 @@
+[
+  {
+    "component": [
+      {
+        "type": "text",
+        "value": "echo"
+      }
+    ],
+    "params": [
+      [
+        {
+          "type": "text",
+          "value": "hello"
+        }
+      ]
+    ],
+    "redirect": [],
+    "pipe": {
+      "component": [
+        {
+          "type": "text",
+          "value": "cat"
+        }
+      ],
+      "params": [],
+      "redirect": []
+    }
+  }
+]
