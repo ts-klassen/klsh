@@ -1,3 +1,5 @@
+# ⚠️  IMPORTANT: The Web UI is 100 % client-side. It must make **NO external network requests** and require **NO backend servers**. All execution happens locally in the browser via Web Workers and IndexedDB.
+
 # Web UI Implementation Plan
 
 This document describes how to implement the web interface while fully satisfying every requirement outlined in `REQUIREMENTS.md`.
