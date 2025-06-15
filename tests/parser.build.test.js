@@ -25,7 +25,7 @@ describe('parser build', function() {
         expect(result).to.equal("echo arg1;\n");
     });
     it('example in requeirements', async function() {
-        const klsh = "cat 'file.txt' 1> 'overwrite.txt' 2>> 'append.txt' 0< 'input.txt' 0<<< 'heredoc line 1\nline 2\nLet'\"'\"'s finish\n' | sort | head -n 10;\ncat '/tmp/swap_stdout_stderr.txt' '/tmp/swap_stdout_stderr_non_existing.txt' 3>&1 4>&2 5>&3 6>&4 1>&6 2>&5;\n";
+        const expected = "cat 'file.txt' 1> 'overwrite.txt' 2>> 'append.txt' 0< 'input.txt' 0<<< 'heredoc line 1\nline 2\nLet'\"'\"'s finish\n' | sort | head -n 10;\ncat '/tmp/swap_stdout_stderr.txt' '/tmp/swap_stdout_stderr_non_existing.txt' 3>&1 4>&2 5>&3 6>&4 1>&6 2>&5;\n";
         const ast = [
             {
                 "component": [
@@ -180,6 +180,6 @@ describe('parser build', function() {
             }
         ];
         const result = klsh.parser.build(ast);
-        expect(result).to.equal(klsh);
+        expect(result).to.equal(expected);
     });
 });
